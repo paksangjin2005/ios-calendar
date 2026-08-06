@@ -2,12 +2,13 @@
 // 1. Firebase 설정 및 초기화 (본인 값으로 변경!)
 // ==========================================
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAy-056YIhiMKQDM8Mp-ZNvG3mNS2lcS8U",
+  authDomain: "calendar-project-by-army.firebaseapp.com",
+  projectId: "calendar-project-by-army",
+  storageBucket: "calendar-project-by-army.firebasestorage.app",
+  messagingSenderId: "376616584546",
+  appId: "1:376616584546:web:6121f2bcb08edca601d83b",
+  measurementId: "G-DVLNHG67EP"
 };
 
 firebase.initializeApp(firebaseConfig);
