@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>iPhone UI Calendar - Enhanced Edition</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase SDK (v9 compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="status-bar">
+      <span id="clockTime">--:--</span>
+    </div>
+
+    <div class="app-header">
+      <div class="top-bar">
+        <div class="month-nav">
+          <button class="nav-arrow" onclick="changeMonth(-1)">‹</button>
+          <div id="monthDisplay" class="month-title">--년 --월</div>
+          <button class="nav-arrow" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn" onclick="openSettingsModal()">⚙</button>
+        </div>
+      </div>
+      <div class="segmented-control">
+        <button id="btnMonth" class="segment-btn active" onclick="switchView('month')">월간</button>
+        <button id="btnWeek" class="segment-btn" onclick="switchView('week')">주간</button>
+      </div>
+    </div>
+
+    <div class="category-section">
+      <button class="add-cat-btn" onclick="openCatModal()">＋ 추가</button>
+      <div class="cat-scroll-area" id="categoryContainer"></div>
+    </div>
+
+    <div class="calendar-body" id="calendarBody">
+      <div class="weekdays-header">
+        <span style="color:var(--accent-red);">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span style="color:var(--accent-blue);">토</span>
+      </div>
+      <div class="calendar-viewport">
+        <div class="calendar-track" id="calendarTrack">
+          <div id="gridPrev" class="calendar-grid"></div>
+          <div id="gridCurrent" class="calendar-grid"></div>
+          <div id="gridNext" class="calendar-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. 일정 추가 모달 -->
+  <div id="modalOverlay" class="modal-overlay" onclick="closeModal()">
+    <div id="bottomSheet" class="bottom-sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
+      <div class="sheet-header"><span class="sheet-title">새로운 일정</span></div>
+
+      <div class="form-group">
+        <input type="text" id="eventTitle" class="form-input" placeholder="일정 제목">
+      </div>
+
+      <div class="toggles-container">
+        <div class="toggle-item">
+          <span>하루</span>
+          <label class="switch" id="singleSwitchLabel">
+            <input type="checkbox" id="singleDayToggle" checked onchange="handleToggleChange('single')">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="toggle-item">
+          <span>하루종일</span>
+          <label class="switch" id="allDaySwitchLabel">
+            <input type="checkbox" id="allDayToggle" checked onchange="handleToggleChange('allDay')">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div id="endDateGroup" class="form-group" style="display:none;">
+        <label style="font-size:11px; color:var(--text-muted); margin-bottom:4px; display:block;">종료 날짜</label>
+        <input type="date" id="endDateInput" class="form-input">
+      </div>
+
+      <div id="timeGroup" class="form-group" style="display:none;">
+        <label style="font-size:11px; color:var(--text-muted); margin-bottom:4px; display:block;">시작 시간</label>
+        <input type="time" id="eventTime" class="form-input" value="12:00">
+      </div>
+
+      <div class="form-group" style="margin-top:8px;">
+        <label style="font-size:11px; color:var(--text-muted); margin-bottom:4px; display:block;">카테고리</label>
+        <div id="modalCategoryList" class="category-picker"></div>
+      </div>
+
+      <div class="toggle-item left-aligned" style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+        <label class="switch">
+          <input type="checkbox" id="detailsToggle" onchange="toggleDetailsVisibility()">
+          <span class="slider"></span>
+        </label>
+        <span>세부내역 작성</span>
+      </div>
+
+      <div id="detailsGroup" class="form-group" style="display:none; margin-top: 10px;">
+        <textarea id="eventDetails" class="form-input" placeholder="세부내역을 입력하세요" rows="3" style="resize:none; font-family:inherit;"></textarea>
+      </div>
+
+      <button class="save-btn" onclick="saveEvent()">일정 저장</button>
+    </div>
+  </div>
+
+  <!-- 2. 카테고리 추가 모달 -->
+  <div id="catModalOverlay" class="modal-overlay" onclick="closeCatModal()">
+    <div id="catBottomSheet" class="bottom-sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
+      <div class="sheet-header"><span class="sheet-title">새 카테고리 추가</span></div>
+      
+      <div class="form-group">
+        <input type="text" id="newCatName" class="form-input" placeholder="카테고리 이름 (예: 운동, 공부)">
+      </div>
+
+      <div class="form-group">
+        <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:6px;">색상 선택</label>
+        <div class="color-picker-group" id="colorPickerGroup"></div>
+      </div>
+
+      <button class="save-btn" onclick="saveCategory()">카테고리 저장</button>
+    </div>
+  </div>
+
+  <!-- 3. 일정 상세 내용 모달 -->
+  <div id="detailModalOverlay" class="modal-overlay" onclick="closeDetailModal()">
+    <div id="detailBottomSheet" class="bottom-sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
+      
+      <div class="detail-header-group">
+        <span id="detailTitle" class="detail-title-text">지정목록</span>
+        <div id="detailCatChip" class="cat-chip" style="pointer-events: none; padding: 4px 10px; font-size: 12px;">
+          <div id="detailCatDot" class="cat-dot"></div>
+          <span id="detailCatName">카테고리</span>
+        </div>
+      </div>
+
+      <div id="detailTimeArea" class="detail-time-text"></div>
+
+      <div id="detailNotesContainer" style="margin-bottom: 16px; background: var(--bg-input); padding: 12px; border-radius: 10px; display: none;">
+        <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px; font-weight:600;">세부사항</div>
+        <div id="detailNotesText" style="font-size: 14px; white-space: pre-wrap; word-break: break-all; color: var(--text-main);"></div>
+      </div>
+
+      <div class="detail-footer-area">
+        <button class="detail-trash-square-btn" onclick="deleteCurrentEventFromDetail()">🗑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. 좌측 서랍식 설정 모달 (구글 로그인 추가) -->
+  <div id="settingsModalOverlay" class="modal-overlay" onclick="closeSettingsModal()">
+    <div id="settingsSideDrawer" class="side-drawer-left" onclick="event.stopPropagation()">
+      <div class="sheet-header" style="margin-bottom: 20px;">
+        <span class="sheet-title" style="font-size: 20px;">설정</span>
+      </div>
+
+      <div class="settings-list" style="display: flex; flex-direction: column; width: 100%;">
+        
+        <!-- 화면 모드 설정 -->
+        <div class="toggle-item" style="padding: 14px 0; border-bottom: 1px solid var(--border-color);">
+          <span>화면 모드</span>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span id="themeModeLabel" style="font-size: 14px; font-weight: 600; color: var(--text-muted);">Dark</span>
+            <label class="switch">
+              <input type="checkbox" id="themeToggleSwitch" onchange="toggleThemeFromSettings()">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 구글 계정 연동 설정 -->
+        <div class="toggle-item" style="padding: 14px 0; border-bottom: 1px solid var(--border-color); flex-direction: column; align-items: flex-start; gap: 8px;">
+          <span style="font-size:14px; font-weight:600;">구글 계정 연동</span>
+          <div id="googleUserStatus" style="font-size: 12px; color: var(--text-muted);">로그인이 필요합니다.</div>
+          <button id="btnLoginGoogle" class="save-btn" style="margin-top: 4px; padding: 10px;" onclick="loginWithGoogle()">Google 로그인</button>
+          <button id="btnLogoutGoogle" class="delete-btn" style="margin-top: 4px; padding: 10px; display: none;" onclick="logoutGoogle()">로그아웃</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. 삭제 확인 모달 -->
+  <div id="deleteModalOverlay" class="modal-overlay" onclick="closeDeleteModal()">
+    <div id="deleteBottomSheet" class="bottom-sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
+      <div class="sheet-header"><span class="sheet-title">삭제 확인</span></div>
+      <p style="font-size:14px; color:var(--text-muted); margin-bottom:12px;" id="deleteModalDesc">항목을 삭제하시겠습니까?</p>
+      <button class="delete-btn" id="confirmDeleteBtn">삭제하기</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
