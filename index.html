@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>iPhone UI Calendar - Enhanced Edition</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="ui-layout.css">
 
   <!-- Firebase SDK (v9 compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
@@ -200,6 +201,44 @@
     </div>
   </div>
 
+  <!-- 1. 하단 툴바 -->
+  <nav class="ui-bottom-toolbar">
+    <div class="ui-toolbar-left">
+      <button id="ui-btn-drawer" class="ui-icon-btn">☰</button>
+      <button id="ui-btn-search" class="ui-icon-btn">🔍</button>
+    </div>
+    <button id="ui-btn-add" class="ui-fab-btn">＋</button>
+  </nav>
+
+  <!-- 2. 왼쪽 서랍 (Drawer) -->
+  <div id="ui-drawer-overlay" class="ui-overlay"></div>
+  <aside id="ui-drawer" class="ui-drawer">
+    <div class="ui-drawer-header">
+      <h2>메뉴</h2>
+      <button id="ui-btn-close-drawer" class="ui-close-btn">✕</button>
+    </div>
+    <ul class="ui-drawer-menu">
+      <li id="menu-filter">📁 카테고리 필터</li>
+      <li id="menu-dday">🎉 D-Day / 기념일</li>
+      <li id="menu-theme">⚙️ 화면 테마 (다크모드)</li>
+      <li id="menu-sync">☁️ Firebase 동기화</li>
+    </ul>
+  </aside>
+
+  <!-- 3. 하단 검색 바텀 시트 (Search) -->
+  <div id="ui-search-overlay" class="ui-overlay"></div>
+  <div id="ui-search-sheet" class="ui-bottom-sheet">
+    <div class="ui-sheet-handle"></div>
+    <div class="ui-sheet-content">
+      <input type="text" id="ui-search-input" placeholder="일정, 메모 검색..." autocomplete="off">
+      <div class="ui-search-results">
+        <p class="ui-empty-state">왼손 엄지로 바로 타이핑하세요.</p>
+        <ul id="ui-search-list"></ul>
+      </div>
+    </div>
+  </div>
+
   <script src="script.js"></script>
+  <script src="ui-layout.js"></script>
 </body>
 </html>
