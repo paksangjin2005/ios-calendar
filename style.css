@@ -52,7 +52,7 @@ html, body {
    3. 검색 버튼 수정 (요청사항 적용)
 ======================================================== */
 .ui-btn-search {
-    background-image: url('../images/search.png'); /* 이미지 경로 */
+    background-image: url('images/search.png'); /* 이미지 경로 */
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
