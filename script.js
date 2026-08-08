@@ -45,13 +45,13 @@ auth.onAuthStateChanged(async (user) => {
   const logoutBtn = document.getElementById('btnLogoutGoogle');
 
   if (user) {
-    if (statusElem) statusElem.innerText = `${user.displayName}님 로그인 중`;
+    if (statusElem) statusElem.innerText = `${user.displayName}님`;
     if (loginBtn) loginBtn.style.display = 'none';
-    if (logoutBtn) logoutBtn.style.display = 'block';
+    if (logoutBtn) logoutBtn.style.display = 'inline-block';
     await loadDataFromCloud();
   } else {
     if (statusElem) statusElem.innerText = '로그인이 필요합니다.';
-    if (loginBtn) loginBtn.style.display = 'block';
+    if (loginBtn) loginBtn.style.display = 'inline-block';
     if (logoutBtn) logoutBtn.style.display = 'none';
     events = [];
     renderCalendar();
@@ -467,6 +467,7 @@ function renderCategories() {
         openDeleteModal(`'${cat.name}' 카테고리를 삭제하시겠습니까?`, () => {
           categories = categories.filter(c => c.id !== cat.id);
           renderCategories();
+          renderCatManageList();
           renderModalCategories();
           saveDataToCloud();
         });
@@ -476,13 +477,51 @@ function renderCategories() {
   });
 }
 
-window.openCatModal = function() {
+function renderCatManageList() {
+  const list = document.getElementById('catManageList');
+  const empty = document.getElementById('catManageEmpty');
+  if (!list) return;
+
+  list.innerHTML = '';
+  if (categories.length === 0) {
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  categories.forEach(cat => {
+    const chip = document.createElement('div');
+    chip.className = `cat-manage-chip${cat.isDefault ? ' is-default' : ''}`;
+    chip.innerHTML = `<div class="cat-dot" style="background:${cat.color}"></div><span>${cat.name}</span>`;
+
+    if (!cat.isDefault) {
+      attachLongPress(chip, () => {
+        openDeleteModal(`'${cat.name}' 카테고리를 삭제하시겠습니까?`, () => {
+          categories = categories.filter(c => c.id !== cat.id);
+          renderCategories();
+          renderCatManageList();
+          renderModalCategories();
+          saveDataToCloud();
+        });
+      });
+    }
+    list.appendChild(chip);
+  });
+}
+
+window.openCatManageModal = function() {
+  renderCatManageList();
+
   const overlay = document.getElementById('catModalOverlay');
   const sheet = document.getElementById('catBottomSheet');
   if (overlay && sheet) {
     overlay.classList.add('active');
     sheet.style.transform = 'translateY(0)';
   }
+
+  const nameInput = document.getElementById('newCatName');
+  if (nameInput) nameInput.value = '';
+
   const colors = ['#FF2D55', '#AF52DE', '#5856D6', '#FFCC00', '#00C7BE', '#FF9500'];
   const picker = document.getElementById('colorPickerGroup');
   if (!picker) return;
@@ -494,13 +533,15 @@ window.openCatModal = function() {
     dot.className = `color-dot-opt ${idx === 0 ? 'selected' : ''}`;
     dot.style.background = c;
     dot.onclick = () => {
-      document.querySelectorAll('.color-dot-opt').forEach(d => d.classList.remove('selected'));
+      document.querySelectorAll('#colorPickerGroup .color-dot-opt').forEach(d => d.classList.remove('selected'));
       dot.classList.add('selected');
       selectedCatColor = c;
     };
     picker.appendChild(dot);
   });
 };
+
+window.openCatModal = window.openCatManageModal;
 
 window.closeCatModal = function() {
   const sheet = document.getElementById('catBottomSheet');
@@ -527,8 +568,8 @@ window.saveCategory = function() {
   });
 
   nameInput.value = '';
-  closeCatModal();
   renderCategories();
+  renderCatManageList();
   renderModalCategories();
   saveDataToCloud();
 };
