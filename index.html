@@ -2,9 +2,8 @@
 <html lang="ko" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>iPhone UI Calendar - Enhanced Edition</title>
-  <!-- CSS 통합 반영: style.css 하나만 로드 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>iPhone UI Calendar</title>
   <link rel="stylesheet" href="style.css">
 
   <!-- Firebase SDK (v9 compat) -->
@@ -27,7 +26,6 @@
           <button class="nav-arrow" onclick="changeMonth(1)">›</button>
         </div>
         <div class="header-actions">
-          <!-- 기존 톱니바퀴 위치에 통합 설정 및 메뉴 ☰ 버튼 배치 -->
           <button class="icon-btn" onclick="openSettingsDrawer()">☰</button>
         </div>
       </div>
@@ -56,7 +54,7 @@
     </div>
   </div>
 
-  <!-- 1. 일정 추가 모달 -->
+  <!-- 일정 추가 모달 -->
   <div id="modalOverlay" class="modal-overlay" onclick="closeModal()">
     <div id="bottomSheet" class="bottom-sheet" onclick="event.stopPropagation()">
       <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
@@ -114,7 +112,7 @@
     </div>
   </div>
 
-  <!-- 2. 카테고리 관리 바텀 시트 -->
+  <!-- 카테고리 관리 바텀 시트 -->
   <div id="catModalOverlay" class="modal-overlay" onclick="closeCatModal()">
     <div id="catBottomSheet" class="bottom-sheet cat-manage-sheet" onclick="event.stopPropagation()">
       <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
@@ -145,7 +143,7 @@
     </div>
   </div>
 
-  <!-- 3. 일정 상세 내용 모달 -->
+  <!-- 일정 상세 내용 모달 -->
   <div id="detailModalOverlay" class="modal-overlay" onclick="closeDetailModal()">
     <div id="detailBottomSheet" class="bottom-sheet" onclick="event.stopPropagation()">
       <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
@@ -171,7 +169,7 @@
     </div>
   </div>
 
-  <!-- 4. 통합된 설정 및 메뉴 서랍 (Drawer) -->
+  <!-- 설정 및 메뉴 서랍 -->
   <div id="settingsModalOverlay" class="modal-overlay" onclick="closeSettingsDrawer()">
     <div id="settingsSideDrawer" class="side-drawer-left" onclick="event.stopPropagation()">
       <div class="sheet-header settings-drawer-header">
@@ -180,8 +178,6 @@
       </div>
 
       <div class="settings-list">
-        
-        <!-- 화면 모드 설정 -->
         <div class="settings-row">
           <span class="settings-label">화면 모드</span>
           <div class="settings-row-action">
@@ -193,7 +189,6 @@
           </div>
         </div>
 
-        <!-- 구글 계정 연동 설정 -->
         <div class="settings-row">
           <div class="settings-row-info">
             <span class="settings-label">구글 계정 연동</span>
@@ -203,17 +198,15 @@
           <button id="btnLogoutGoogle" class="settings-compact-btn settings-btn-danger" style="display: none;" onclick="logoutGoogle()">로그아웃</button>
         </div>
 
-        <!-- 메뉴 리스트 -->
         <ul class="settings-menu">
           <li onclick="closeSettingsDrawer(); openCatManageModal();">📁 카테고리 관리</li>
           <li onclick="closeSettingsDrawer(); alert('준비 중인 기능입니다.');">🎉 D-Day / 기념일</li>
         </ul>
-
       </div>
     </div>
   </div>
 
-  <!-- 5. 삭제 확인 모달 -->
+  <!-- 삭제 확인 모달 -->
   <div id="deleteModalOverlay" class="modal-overlay" onclick="closeDeleteModal()">
     <div id="deleteBottomSheet" class="bottom-sheet" onclick="event.stopPropagation()">
       <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
@@ -231,7 +224,7 @@
     <button id="ui-btn-add" class="ui-fab-btn" onclick="openAddModal()">＋</button>
   </nav>
 
-  <!-- 하단 검색 바텀 시트 (Search) -->
+  <!-- 하단 검색 바텀 시트 -->
   <div id="ui-search-overlay" class="ui-overlay" onclick="closeSearchSheet()"></div>
   <div id="ui-search-sheet" class="ui-bottom-sheet">
     <div class="ui-sheet-handle"></div>
