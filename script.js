@@ -180,7 +180,7 @@ window.closeSettingsDrawer = function() {
     setTimeout(() => {
       overlay.classList.remove('active');
       drawer.style.transform = '';
-    }, 300);
+    }, 400);
   }
 };
 
@@ -209,7 +209,7 @@ function makeLeftDrawerDraggable(drawerId, closeFn) {
     if (!isDragging) return;
     isDragging = false;
     let deltaX = currentX - startX;
-    drawer.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+    drawer.style.transition = 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
     if (deltaX < -60) {
       closeFn();
     } else {
@@ -277,16 +277,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (filtered.length > 0) {
           emptyState.style.display = 'none';
           searchList.innerHTML = filtered.map(ev => `
-            <li class="ui-search-item" style="padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer;" onclick="closeSearchSheet(); openDetailModalById(${ev.id});">
-              <div class="ui-search-date" style="font-size: 12px; color: var(--accent-red); margin-bottom: 4px;">${ev.startDate}</div>
-              <div class="ui-search-title" style="font-size: 16px; color: var(--text-main);">${ev.title}</div>
+            <li class="ui-search-item" onclick="closeSearchSheet(); openDetailModalById(${ev.id});">
+              <div class="ui-search-date">${ev.startDate}</div>
+              <div class="ui-search-title">${ev.title}</div>
             </li>
           `).join('');
         } else {
           emptyState.style.display = 'none';
           searchList.innerHTML = `
-            <li class="ui-search-item" style="padding: 12px 0;">
-              <div class="ui-search-title" style="font-size: 14px; color: var(--text-muted);">검색 결과가 없습니다.</div>
+            <li class="ui-search-item" style="cursor: default;">
+              <div class="ui-search-title" style="color: var(--text-muted); font-size: 14px;">검색 결과가 없습니다.</div>
             </li>
           `;
         }
@@ -307,6 +307,7 @@ window.openDetailModalById = function(eventId) {
 // 7. 캘린더 보기 및 조작 로직
 // ==========================================
 window.switchView = function(view) {
+  if (navigator.vibrate) navigator.vibrate(10);
   currentView = view;
   document.getElementById('btnMonth').classList.toggle('active', view === 'month');
   document.getElementById('btnWeek').classList.toggle('active', view === 'week');
@@ -321,6 +322,7 @@ window.switchView = function(view) {
 };
 
 window.changeMonth = function(delta) {
+  if (navigator.vibrate) navigator.vibrate(10);
   if (currentView === 'month') {
     currentDate.setMonth(currentDate.getMonth() + delta);
   } else {
@@ -330,6 +332,7 @@ window.changeMonth = function(delta) {
 };
 
 window.handleToggleChange = function(changed) {
+  if (navigator.vibrate) navigator.vibrate(10);
   const singleToggle = document.getElementById('singleDayToggle');
   const allDayToggle = document.getElementById('allDayToggle');
 
@@ -343,6 +346,7 @@ window.handleToggleChange = function(changed) {
 };
 
 window.toggleDetailsVisibility = function() {
+  if (navigator.vibrate) navigator.vibrate(10);
   const isShow = document.getElementById('detailsToggle').checked;
   document.getElementById('detailsGroup').style.display = isShow ? 'block' : 'none';
 };
@@ -370,7 +374,7 @@ function makeSheetDraggable(sheetId, closeFn) {
     if (!isDragging) return;
     isDragging = false;
     let deltaY = currentY - startY;
-    sheet.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+    sheet.style.transition = 'transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)';
     if (deltaY > 70) closeFn();
     else sheet.style.transform = 'translateY(0)';
     startY = 0; currentY = 0;
@@ -426,27 +430,27 @@ function initCalendarSwipe() {
     const threshold = window.innerWidth * 0.22;
 
     if (deltaX < -threshold) {
-      track.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)';
+      track.style.transition = 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)';
       track.style.transform = `translateX(-${window.innerWidth}px)`;
 
       setTimeout(() => {
         changeMonth(1);
         track.style.transition = 'none';
         track.style.transform = 'translateX(0px)';
-      }, 250);
+      }, 300);
 
     } else if (deltaX > threshold) {
-      track.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)';
+      track.style.transition = 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)';
       track.style.transform = `translateX(${window.innerWidth}px)`;
 
       setTimeout(() => {
         changeMonth(-1);
         track.style.transition = 'none';
         track.style.transform = 'translateX(0px)';
-      }, 250);
+      }, 300);
 
     } else {
-      track.style.transition = 'transform 0.20s ease-out';
+      track.style.transition = 'transform 0.25s ease-out';
       track.style.transform = 'translateX(0px)';
     }
   });
@@ -522,7 +526,7 @@ window.openCatManageModal = function() {
   const nameInput = document.getElementById('newCatName');
   if (nameInput) nameInput.value = '';
 
-  const colors = ['#FF2D55', '#AF52DE', '#5856D6', '#FFCC00', '#00C7BE', '#FF9500'];
+  const colors = ['#FF2D55', '#AF52DE', '#5856D6', '#FFCC00', '#34C759', '#FF9500', '#0a84ff', '#ff3b30'];
   const picker = document.getElementById('colorPickerGroup');
   if (!picker) return;
   picker.innerHTML = '';
@@ -533,6 +537,7 @@ window.openCatManageModal = function() {
     dot.className = `color-dot-opt ${idx === 0 ? 'selected' : ''}`;
     dot.style.background = c;
     dot.onclick = () => {
+      if (navigator.vibrate) navigator.vibrate(10);
       document.querySelectorAll('#colorPickerGroup .color-dot-opt').forEach(d => d.classList.remove('selected'));
       dot.classList.add('selected');
       selectedCatColor = c;
@@ -550,7 +555,7 @@ window.closeCatModal = function() {
     sheet.style.transform = 'translateY(100%)';
     setTimeout(() => {
       overlay.classList.remove('active');
-    }, 200);
+    }, 400);
   }
 };
 
@@ -722,6 +727,7 @@ function createCell(container, dateObj, isOtherMonth) {
   });
 
   cell.onclick = () => {
+    if (navigator.vibrate) navigator.vibrate(10);
     selectedDateStr = dateStr;
     openAddModal();
   };
@@ -793,7 +799,7 @@ window.closeDetailModal = function() {
     sheet.style.transform = 'translateY(100%)';
     setTimeout(() => {
       overlay.classList.remove('active');
-    }, 200);
+    }, 400);
   }
 };
 
@@ -821,7 +827,7 @@ window.closeDeleteModal = function() {
     setTimeout(() => {
       overlay.classList.remove('active');
       pendingDeleteAction = null;
-    }, 200);
+    }, 400);
   }
 };
 
@@ -844,6 +850,7 @@ window.openAddModal = function() {
   document.getElementById('timeGroup').style.display = 'none';
   document.getElementById('detailsGroup').style.display = 'none';
   document.getElementById('eventDetails').value = '';
+  document.getElementById('eventTitle').value = '';
 
   document.getElementById('modalOverlay').classList.add('active');
   document.getElementById('bottomSheet').style.transform = 'translateY(0)';
@@ -858,7 +865,7 @@ window.closeModal = function() {
     sheet.style.transform = 'translateY(100%)';
     setTimeout(() => {
       overlay.classList.remove('active');
-    }, 200);
+    }, 400);
   }
 };
 
@@ -871,6 +878,7 @@ function renderModalCategories() {
     btn.className = `cat-select-btn ${cat.id === selectedCatId ? 'selected' : ''}`;
     btn.innerHTML = `<div class="cat-dot" style="background:${cat.color}"></div><span>${cat.name}</span>`;
     btn.onclick = () => {
+      if (navigator.vibrate) navigator.vibrate(10);
       selectedCatId = cat.id;
       renderModalCategories();
     };
@@ -928,7 +936,7 @@ document.addEventListener('DOMContentLoaded', () => {
     sheetHandle.addEventListener('touchstart', e => startY = e.touches[0].clientY);
     sheetHandle.addEventListener('touchmove', e => {
       const currentY = e.touches[0].clientY;
-      if (currentY > startY + 30) window.closeSearchSheet();
+      if (currentY > startY + 40) window.closeSearchSheet();
     });
   }
 
