@@ -1,5 +1,5 @@
 /* ========================================================
-   1. 변수 및 테마 설정 (색상 통합 적용)
+   1. 변수 및 테마 설정
 ======================================================== */
 :root {
   --bg-main: #000000;
@@ -9,11 +9,8 @@
   --text-main: #ffffff;
   --text-muted: #8e8e93;
   --border-color: rgba(255, 255, 255, 0.15);
-  
-  /* 두 가지 기본 테마 색상 (iOS Blue & Red) */
   --accent-blue: #007AFF;
   --accent-red: #FF3B30;
-  
   --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", sans-serif;
   --spring-easing: cubic-bezier(0.32, 0.72, 0, 1);
 }
@@ -36,7 +33,7 @@ html, body { width: 100%; height: 100%; background-color: var(--bg-main); font-f
 .app-container { width: 100%; height: 100%; display: flex; flex-direction: column; position: relative; }
 
 /* ========================================================
-   3. 상단 헤더 및 네비게이션
+   3. 상단 헤더
 ======================================================== */
 .status-bar { height: 44px; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 600; background: var(--bg-glass); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); z-index: 10; flex-shrink: 0; }
 .app-header { padding: 10px 18px 12px; background: var(--bg-glass); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border-bottom: 0.5px solid var(--border-color); z-index: 10; flex-shrink: 0; }
@@ -46,13 +43,10 @@ html, body { width: 100%; height: 100%; background-color: var(--bg-main); font-f
 .nav-arrow { background: none; border: none; color: var(--accent-blue); font-size: 24px; font-weight: 500; cursor: pointer; padding: 2px 10px; transition: opacity 0.2s; }
 .nav-arrow:active { opacity: 0.5; }
 
-/* 상단 우측 아이콘 버튼 (검색, 추가, 설정) */
 .header-actions { display: flex; align-items: center; gap: 8px; }
 .icon-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 6px; transition: opacity 0.2s; }
 .icon-btn:active { opacity: 0.5; }
 .text-icon-btn { color: var(--accent-blue); font-size: 26px; font-weight: 400; padding: 2px 8px; }
-
-/* 검색 버튼 아이콘 마스킹 적용 (파란색) */
 .search-icon-btn {
   width: 24px; height: 24px; margin-right: 4px;
   background-color: var(--accent-blue);
@@ -61,11 +55,11 @@ html, body { width: 100%; height: 100%; background-color: var(--bg-main); font-f
 }
 
 .segmented-control { display: flex; background: rgba(120, 120, 128, 0.16); padding: 2px; border-radius: 8px; }
-.segment-btn { flex: 1; padding: 6px 0; border: none; background: transparent; color: var(--text-main); font-size: 13px; font-weight: 500; border-radius: 6px; cursor: pointer; transition: background 0.2s, box-shadow 0.2s; }
+.segment-btn { flex: 1; padding: 6px 0; border: none; background: transparent; color: var(--text-main); font-size: 13px; font-weight: 500; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
 .segment-btn.active { background: var(--bg-card); box-shadow: 0 3px 8px rgba(0,0,0,0.12); font-weight: 600; }
 
 /* ========================================================
-   4. 캘린더 그리드 및 셀 스타일
+   4. 캘린더 그리드
 ======================================================== */
 .calendar-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .weekdays-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 12px; font-weight: 600; color: var(--text-muted); padding: 10px 0; border-bottom: 0.5px solid var(--border-color); flex-shrink: 0; }
@@ -81,46 +75,47 @@ html, body { width: 100%; height: 100%; background-color: var(--bg-main); font-f
 .day-number { font-size: 14px; font-weight: 500; width: 24px; height: 24px; margin: 4px; display: flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0; }
 .day-cell.today .day-number { background: var(--accent-blue); color: #ffffff !important; font-weight: 600; }
 
-/* 🌟 일정 막대 스크롤 컨테이너 (아래로 내리면 숨겨진 일정 확인 가능) */
-.event-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 2px 2px 2px; }
+/* 🌟 일정 막대 최적화 (이음새 뚝뚝 끊김 완벽 해결) */
+.event-wrapper { flex: 1; display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 0 2px 0; }
 .event-wrapper::-webkit-scrollbar { display: none; }
 
-/* ========================================================
-   5. 일정 막대 최적화 (Lane/Track Algorithm) 디자인
-======================================================== */
-.event-item { font-size: 11px; font-weight: 600; min-height: 18px; line-height: 18px; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; position: relative; z-index: 2; box-sizing: border-box; cursor: pointer; border-radius: 4px; padding: 0 4px; }
+.event-item { font-size: 11px; font-weight: 600; min-height: 18px; line-height: 18px; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: clip; margin-bottom: 2px; position: relative; z-index: 2; box-sizing: border-box; cursor: pointer; padding: 0 4px; }
 .calendar-grid.week-view .event-item { min-height: 48px; padding: 6px; font-size: 12px; white-space: normal; word-break: break-all; }
 
-/* 다중 일자 일정 뚝뚝 끊기는 느낌 수정 */
-.schedule-bar { margin: 0 0 2px 0; border-radius: 0; }
-.schedule-bar.is-start { border-top-left-radius: 4px; border-bottom-left-radius: 4px; margin-left: 2px; }
-.schedule-bar.is-end { border-top-right-radius: 4px; border-bottom-right-radius: 4px; margin-right: 2px; }
-.schedule-bar.is-single { border-radius: 4px; margin-left: 2px; margin-right: 2px; }
+/* 다중 일정 끊김 없는 막대 디자인 */
+.schedule-bar { border-radius: 0; margin: 0; }
+.schedule-bar.is-single { border-radius: 4px; margin: 0 2px 2px 2px; width: auto; z-index: 2; }
+/* calc(100% + 1px)를 주어 우측 셀 테두리 선을 덮어 시각적 단절 방지 */
+.schedule-bar.is-start { border-radius: 4px 0 0 4px; margin-left: 2px; margin-right: 0; width: calc(100% + 1px); z-index: 5; }
+.schedule-bar.is-middle { border-radius: 0; margin: 0; width: calc(100% + 1px); z-index: 5; }
+.schedule-bar.is-end { border-radius: 0 4px 4px 0; margin-left: 0; margin-right: 2px; width: auto; z-index: 5; text-overflow: ellipsis; }
 
-/* 빈 칸 유지를 위한 투명 스페이서 */
 .spacer { background: transparent !important; color: transparent !important; pointer-events: none; }
-.timed-event { background: transparent !important; color: var(--text-main); padding-left: 6px; border-left: 3px solid transparent; border-radius: 0 !important; }
+.timed-event { background: transparent !important; color: var(--text-main); padding-left: 6px; border-left: 3px solid transparent; border-radius: 0 !important; margin: 0 2px 2px 2px; }
 
 /* ========================================================
-   6. 모달 & 폼 컨트롤 (공통)
+   5. 모달 및 폼 컨트롤
 ======================================================== */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 1100; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: flex; justify-content: center; align-items: flex-end; }
 .modal-overlay.active { opacity: 1; pointer-events: auto; }
-.bottom-sheet { width: 100%; background: var(--bg-card); border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 12px 20px 30px; transform: translateY(100%); transition: transform 0.4s var(--spring-easing); box-shadow: 0 -4px 20px rgba(0,0,0,0.15); touch-action: none; padding-bottom: max(30px, env(safe-area-inset-bottom)); }
 
-.sheet-handle-area { width: 100%; padding: 8px 0 16px; display: flex; justify-content: center; cursor: grab; }
-.sheet-handle { width: 36px; height: 5px; background: var(--text-muted); opacity: 0.4; border-radius: 3px; }
-.sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+/* Bottom Sheets 통일 (검색 포함) */
+.bottom-sheet, .ui-bottom-sheet { width: 100%; background: var(--bg-card); border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 0 20px 30px; transform: translateY(100%); transition: transform 0.4s var(--spring-easing); box-shadow: 0 -4px 20px rgba(0,0,0,0.15); padding-bottom: max(30px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; position: absolute; bottom: 0; left: 0; }
+.ui-bottom-sheet { height: 85vh; padding: 0; }
+.ui-sheet-content { padding: 0 20px 20px; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.sheet-handle-area, .ui-sheet-handle-area { width: 100%; padding: 12px 0 20px; display: flex; justify-content: center; cursor: grab; touch-action: none; flex-shrink: 0; }
+.sheet-handle, .ui-sheet-handle { width: 36px; height: 5px; background: var(--text-muted); opacity: 0.4; border-radius: 3px; pointer-events: none; }
+.sheet-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; }
 .sheet-title { font-size: 18px; font-weight: 700; letter-spacing: -0.4px; }
 
 .form-group { margin-bottom: 16px; width: 100%; }
-.form-input { width: 100%; padding: 14px 16px; background: var(--bg-input); border: none; border-radius: 12px; color: var(--text-main); font-size: 16px; outline: none; transition: background 0.2s; }
+.form-input { width: 100%; padding: 14px 16px; background: var(--bg-input); border: none; border-radius: 12px; color: var(--text-main); font-size: 16px; outline: none; }
 .toggles-container { background: var(--bg-input); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
 .toggle-item { display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: 500; padding: 12px 16px; border-bottom: 0.5px solid var(--border-color); }
 .toggle-item:last-child { border-bottom: none; }
 .toggle-item.left-aligned { justify-content: flex-start; gap: 12px; background: transparent; border: none; padding: 12px 0; }
 
-/* 토글 스위치 */
 .switch { position: relative; display: inline-block; width: 50px; height: 30px; flex-shrink: 0; }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #39393d; transition: .3s; border-radius: 34px; }
@@ -128,8 +123,7 @@ html, body { width: 100%; height: 100%; background-color: var(--bg-main); font-f
 input:checked + .slider { background-color: #34C759; }
 input:checked + .slider:before { transform: translateX(20px); }
 
-/* 카테고리 칩 및 버튼 */
-.category-picker { display: flex; gap: 10px; margin-top: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.category-picker { display: flex; gap: 10px; margin-top: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
 .category-picker::-webkit-scrollbar { display: none; }
 .cat-select-btn { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 100px; background: var(--bg-input); font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; border: 1.5px solid transparent; }
 .cat-select-btn.selected { border-color: var(--accent-blue); background: rgba(0, 122, 255, 0.1); color: var(--accent-blue); }
@@ -141,59 +135,41 @@ input:checked + .slider:before { transform: translateX(20px); }
 .delete-btn { background: var(--accent-red); color: #ffffff; }
 .save-btn:active, .delete-btn:active { opacity: 0.8; transform: scale(0.98); }
 
-/* 색상 선택기 */
 .color-picker-group { display: flex; gap: 12px; margin-top: 8px; }
 .color-dot-opt { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.2s; }
 .color-dot-opt.selected { border-color: var(--bg-card); outline: 2px solid #ffffff; transform: scale(1.15); }
 
 /* ========================================================
-   7. 상세 보기 및 삭제 버튼 (파란색 휴지통 마스킹)
+   6. 상세 보기
 ======================================================== */
 .detail-header-group { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
 .detail-title-text { font-size: 22px; font-weight: 700; color: var(--text-main); letter-spacing: -0.5px; }
 .detail-time-text { font-size: 14px; color: var(--text-muted); font-weight: 500; margin-bottom: 20px; }
 .detail-footer-area { display: flex; justify-content: flex-end; margin-top: 24px; padding-top: 16px; border-top: 0.5px solid var(--border-color); }
-
-/* 파란색 trash.png 버튼 */
-.detail-trash-btn {
-  width: 28px; height: 28px;
-  background-color: var(--accent-blue);
-  -webkit-mask: url('images/trash.png') no-repeat center / contain;
-  mask: url('images/trash.png') no-repeat center / contain;
-  border: none; cursor: pointer; padding: 0;
-  transition: opacity 0.2s;
-}
+.detail-trash-btn { width: 28px; height: 28px; background-color: var(--accent-blue); -webkit-mask: url('images/trash.png') no-repeat center / contain; mask: url('images/trash.png') no-repeat center / contain; border: none; cursor: pointer; padding: 0; transition: opacity 0.2s; }
 .detail-trash-btn:active { opacity: 0.5; }
 
 /* ========================================================
-   8. 사이드 드로어, 하단 시트 (설정, 카테고리 관리, 검색)
+   7. 사이드 드로어 (설정), 검색 시트
 ======================================================== */
 .side-drawer-left { position: fixed; top: 0; left: 0; bottom: 0; width: 85%; max-width: 340px; background: var(--bg-card); z-index: 1200; padding: 40px 20px 20px; display: flex; flex-direction: column; box-shadow: 10px 0 30px rgba(0,0,0,0.2); transform: translateX(-100%); transition: transform 0.4s var(--spring-easing); touch-action: none; }
-.side-drawer-left.active { transform: translateX(0); }
-.settings-list { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+.settings-list { display: flex; flex-direction: column; gap: 16px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; margin-top: 10px; }
 .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: var(--bg-input); border-radius: 12px; }
 .settings-label { font-size: 16px; font-weight: 500; }
+.settings-row-action { display: flex; align-items: center; }
 .settings-menu { list-style: none; background: var(--bg-input); border-radius: 12px; overflow: hidden; }
 .settings-menu li { padding: 16px; border-bottom: 0.5px solid var(--border-color); cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 16px; font-weight: 500; }
 .settings-compact-btn { padding: 8px 16px; font-size: 14px; font-weight: 600; border: none; border-radius: 100px; cursor: pointer; }
 .settings-btn-primary { background: rgba(0, 122, 255, 0.15); color: var(--accent-blue); }
 .settings-btn-danger { background: rgba(255, 59, 48, 0.15); color: var(--accent-red); }
 
-/* 검색 바텀 시트 */
-.ui-bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; height: 85vh; background: var(--bg-card); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 1200; transition: bottom 0.4s var(--spring-easing); box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom); }
-.ui-bottom-sheet.active { bottom: 0; }
-.ui-sheet-handle { width: 36px; height: 5px; background: var(--text-muted); border-radius: 3px; margin: 12px auto; opacity: 0.4; }
-.ui-sheet-content { padding: 0 20px 20px; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-#ui-search-input { width: 100%; padding: 14px 16px 14px 44px; background: var(--bg-input) url('images/search.png') no-repeat 14px center / 20px; border: none; border-radius: 12px; font-size: 16px; color: var(--text-main); outline: none; margin-bottom: 20px; }
+#ui-search-input { width: 100%; padding: 14px 16px 14px 44px; background: var(--bg-input) url('images/search.png') no-repeat 14px center / 20px; border: none; border-radius: 12px; font-size: 16px; color: var(--text-main); outline: none; margin-bottom: 20px; flex-shrink: 0; }
 .ui-search-results { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .ui-empty-state { text-align: center; color: var(--text-muted); font-size: 15px; margin-top: 60px; font-weight: 500; }
 .ui-search-item { padding: 16px 0; border-bottom: 0.5px solid var(--border-color); cursor: pointer; }
 .ui-search-date { font-size: 12px; color: var(--accent-red); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
 .ui-search-title { font-size: 17px; color: var(--text-main); font-weight: 500; }
-.ui-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 1100; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-.ui-overlay.active { opacity: 1; pointer-events: auto; }
 
-/* 카테고리 관리 시트용 설정 */
 .cat-manage-sheet { max-height: 90vh; }
 .cat-manage-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; }
 .cat-manage-grid { display: grid; grid-template-rows: repeat(2, auto); grid-auto-flow: column; grid-auto-columns: max-content; gap: 10px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; }
