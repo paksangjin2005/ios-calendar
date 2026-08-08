@@ -17,13 +17,12 @@ const db = firebase.firestore();
 let currentUser = null;
 
 // ==========================================
-// 2. 앱 전역 변수 (색상 통합 - iOS Blue & Red)
+// 2. 앱 전역 변수
 // ==========================================
 let currentDate = new Date();
 let selectedDateStr = getLocalDateStr(new Date());
 let currentView = 'month';
 
-// 카테고리 색상 2가지로 통합
 let categories = [
   { id: 'cat_work', name: '업무', color: '#007AFF', isDefault: true },
   { id: 'cat_personal', name: '개인', color: '#FF3B30', isDefault: true }
@@ -35,21 +34,18 @@ let activeDetailEventId = null;
 let pendingDeleteAction = null;
 
 // ==========================================
-// 3. Firebase 및 데이터 로직
+// 3. Firebase 로그인 로직 (설정 UI 한 줄 대응)
 // ==========================================
 auth.onAuthStateChanged(async (user) => {
   currentUser = user;
-  const statusElem = document.getElementById('googleUserStatus');
   const loginBtn = document.getElementById('btnLoginGoogle');
   const logoutBtn = document.getElementById('btnLogoutGoogle');
 
   if (user) {
-    if (statusElem) statusElem.innerText = `${user.displayName}님`;
     if (loginBtn) loginBtn.style.display = 'none';
     if (logoutBtn) logoutBtn.style.display = 'inline-block';
     await loadDataFromCloud();
   } else {
-    if (statusElem) statusElem.innerText = '로그인이 필요합니다.';
     if (loginBtn) loginBtn.style.display = 'inline-block';
     if (logoutBtn) logoutBtn.style.display = 'none';
     events = [];
@@ -87,15 +83,12 @@ async function loadDataFromCloud() {
 function getLocalDateStr(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
-
 function updateClock() {
   const now = new Date();
   const clockElem = document.getElementById('clockTime');
   if (clockElem) clockElem.innerText = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 }
-
 function getHolidayName(dateObj) {
-  // 간소화된 공휴일 로직
   const m = dateObj.getMonth() + 1, d = dateObj.getDate();
   if (m === 1 && d === 1) return '신정';
   if (m === 3 && d === 1) return '삼일절';
@@ -109,14 +102,14 @@ function getHolidayName(dateObj) {
 }
 
 // ==========================================
-// 5. Drawer 및 Sheet UI 제어
+// 5. Drawer, Sheet UI 및 스와이프 닫기 제어
 // ==========================================
 window.openSettingsDrawer = function() {
   document.getElementById('settingsModalOverlay').classList.add('active');
-  setTimeout(() => { document.getElementById('settingsSideDrawer').classList.add('active'); }, 10);
+  document.getElementById('settingsSideDrawer').style.transform = 'translateX(0)';
 };
 window.closeSettingsDrawer = function() {
-  document.getElementById('settingsSideDrawer').classList.remove('active');
+  document.getElementById('settingsSideDrawer').style.transform = 'translateX(-100%)';
   setTimeout(() => { document.getElementById('settingsModalOverlay').classList.remove('active'); }, 400);
 };
 window.toggleThemeFromSettings = function() {
@@ -127,15 +120,17 @@ window.toggleThemeFromSettings = function() {
 
 window.openSearchSheet = function() {
   document.getElementById('ui-search-overlay').classList.add('active');
-  document.getElementById('ui-search-sheet').classList.add('active');
+  document.getElementById('ui-search-sheet').style.transform = 'translateY(0)';
   setTimeout(() => document.getElementById('ui-search-input').focus(), 300);
 };
 window.closeSearchSheet = function() {
-  document.getElementById('ui-search-sheet').classList.remove('active');
-  document.getElementById('ui-search-overlay').classList.remove('active');
-  document.getElementById('ui-search-input').value = '';
-  document.getElementById('ui-search-list').innerHTML = '';
-  document.querySelector('.ui-empty-state').style.display = 'block';
+  document.getElementById('ui-search-sheet').style.transform = 'translateY(100%)';
+  setTimeout(() => {
+    document.getElementById('ui-search-overlay').classList.remove('active');
+    document.getElementById('ui-search-input').value = '';
+    document.getElementById('ui-search-list').innerHTML = '';
+    document.querySelector('.ui-empty-state').style.display = 'block';
+  }, 400);
 };
 
 document.getElementById('ui-search-input').addEventListener('input', (e) => {
@@ -158,16 +153,70 @@ window.openDetailModalById = function(eventId) {
   if (ev) openDetailModal(ev);
 };
 
+// 🌟 스와이프 다운 / 스와이프 레프트 제스처 로직
+function initSwipeGestures() {
+  // 1. 바텀 시트 (내려서 닫기)
+  const bottomSheets = document.querySelectorAll('.bottom-sheet, .ui-bottom-sheet');
+  bottomSheets.forEach(sheet => {
+    const handle = sheet.querySelector('.sheet-handle-area, .ui-sheet-handle-area');
+    if (!handle) return;
+    
+    let startY = 0;
+    handle.addEventListener('touchstart', e => {
+      startY = e.touches[0].clientY;
+      sheet.style.transition = 'none';
+    }, { passive: true });
+    
+    handle.addEventListener('touchmove', e => {
+      let deltaY = e.touches[0].clientY - startY;
+      if (deltaY > 0) sheet.style.transform = `translateY(${deltaY}px)`;
+    }, { passive: true });
+    
+    handle.addEventListener('touchend', e => {
+      sheet.style.transition = 'transform 0.4s var(--spring-easing)';
+      let deltaY = e.changedTouches[0].clientY - startY;
+      
+      if (deltaY > 50) {
+        // ID에 맞는 닫기 함수 호출
+        if (sheet.id === 'bottomSheet') closeModal();
+        else if (sheet.id === 'catBottomSheet') closeCatModal();
+        else if (sheet.id === 'detailBottomSheet') closeDetailModal();
+        else if (sheet.id === 'deleteBottomSheet') closeDeleteModal();
+        else if (sheet.id === 'ui-search-sheet') closeSearchSheet();
+        else sheet.style.transform = 'translateY(100%)';
+      } else {
+        sheet.style.transform = 'translateY(0)';
+      }
+    });
+  });
+
+  // 2. 설정 서랍 (왼쪽으로 밀어서 닫기)
+  const drawer = document.getElementById('settingsSideDrawer');
+  let startX = 0;
+  drawer.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    drawer.style.transition = 'none';
+  }, { passive: true });
+  drawer.addEventListener('touchmove', e => {
+    let deltaX = e.touches[0].clientX - startX;
+    if (deltaX < 0) drawer.style.transform = `translateX(${deltaX}px)`;
+  }, { passive: true });
+  drawer.addEventListener('touchend', e => {
+    drawer.style.transition = 'transform 0.4s var(--spring-easing)';
+    let deltaX = e.changedTouches[0].clientX - startX;
+    if (deltaX < -50) closeSettingsDrawer();
+    else drawer.style.transform = 'translateX(0)';
+  });
+}
+
 // ==========================================
-// 6. 캘린더 최적화 렌더링 (Lane Assignment)
+// 6. 캘린더 최적화 렌더링 (다중일정 이음새 해결)
 // ==========================================
 window.switchView = function(view) {
   currentView = view;
   document.getElementById('btnMonth').classList.toggle('active', view === 'month');
   document.getElementById('btnWeek').classList.toggle('active', view === 'week');
-  ['gridPrev', 'gridCurrent', 'gridNext'].forEach(id => {
-    document.getElementById(id).classList.toggle('week-view', view === 'week');
-  });
+  ['gridPrev', 'gridCurrent', 'gridNext'].forEach(id => { document.getElementById(id).classList.toggle('week-view', view === 'week'); });
   renderCalendar();
 };
 
@@ -202,7 +251,6 @@ function renderGridContent(gridElem, baseDate) {
   const month = baseDate.getMonth();
   let days = [];
 
-  // 날짜 배열 생성
   if (currentView === 'month') {
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
@@ -222,42 +270,29 @@ function renderGridContent(gridElem, baseDate) {
     for (let i = 0; i < 7; i++) days.push({ date: new Date(sunday.getFullYear(), sunday.getMonth(), sunday.getDate() + i), isOther: false });
   }
 
-  // ⭐️ 주간(Week) 단위로 일정을 묶고 Lane(위치) 할당 알고리즘 적용
   for (let i = 0; i < days.length; i += 7) {
     let weekDays = days.slice(i, i + 7);
     let weekStart = getLocalDateStr(weekDays[0].date);
     let weekEnd = getLocalDateStr(weekDays[weekDays.length - 1].date);
 
     let weekEvents = events.filter(e => e.endDate >= weekStart && e.startDate <= weekEnd);
-    
-    // 시작일 오름차순 -> 기간 내림차순 정렬
     weekEvents.sort((a, b) => {
       if (a.startDate !== b.startDate) return a.startDate.localeCompare(b.startDate);
       return new Date(b.endDate) - new Date(b.startDate);
     });
 
-    // 레인(Lane) 할당하여 가로 줄맞춤 유지
     let lanes = [];
     weekEvents.forEach(ev => {
       let placed = false;
       for (let l = 0; l < lanes.length; l++) {
         if (lanes[l] < ev.startDate) {
-          ev._lane = l;
-          lanes[l] = ev.endDate;
-          placed = true;
-          break;
+          ev._lane = l; lanes[l] = ev.endDate; placed = true; break;
         }
       }
-      if (!placed) {
-        ev._lane = lanes.length;
-        lanes.push(ev.endDate);
-      }
+      if (!placed) { ev._lane = lanes.length; lanes.push(ev.endDate); }
     });
 
-    // 각 날짜 셀 생성 및 렌더링
-    weekDays.forEach(dayInfo => {
-      createCell(gridElem, dayInfo.date, dayInfo.isOther, weekEvents);
-    });
+    weekDays.forEach(dayInfo => { createCell(gridElem, dayInfo.date, dayInfo.isOther, weekEvents); });
   }
 }
 
@@ -276,7 +311,6 @@ function createCell(container, dateObj, isOtherMonth, weekEvents) {
   else dayNum.style.color = 'var(--text-main)';
   cell.appendChild(dayNum);
 
-  // 셀 내부에 스크롤 가능한 이벤트 래퍼 추가
   const eventWrapper = document.createElement('div');
   eventWrapper.className = 'event-wrapper';
 
@@ -301,7 +335,6 @@ function createCell(container, dateObj, isOtherMonth, weekEvents) {
         item.style.background = cat.color;
         item.classList.add('schedule-bar');
         
-        // CSS 처리를 위한 클래스 추가 (막대 끊김 현상 해결)
         if (ev.startDate === ev.endDate) {
           item.classList.add('is-single');
           item.innerText = ev.title;
@@ -314,7 +347,6 @@ function createCell(container, dateObj, isOtherMonth, weekEvents) {
           } else {
              item.classList.add('is-middle');
           }
-          // 주의 시작(일요일)일 때 글자 다시 표기
           if (!isStart && dayOfWeek === 0) item.innerText = ev.title;
         }
       }
@@ -322,7 +354,6 @@ function createCell(container, dateObj, isOtherMonth, weekEvents) {
       item.onclick = (e) => { e.stopPropagation(); openDetailModal(ev); };
       eventWrapper.appendChild(item);
     } else {
-      // 위치 유지를 위한 빈 공간(Spacer) 삽입
       const spacer = document.createElement('div');
       spacer.className = 'event-item spacer';
       spacer.innerHTML = '&nbsp;';
@@ -336,7 +367,7 @@ function createCell(container, dateObj, isOtherMonth, weekEvents) {
 }
 
 // ==========================================
-// 7. 일정 추가 / 수정 모달 로직
+// 7. 모달 상태 제어
 // ==========================================
 window.openAddModal = function() {
   document.getElementById('singleDayToggle').checked = true;
@@ -402,9 +433,6 @@ window.saveEvent = function() {
   saveDataToCloud();
 };
 
-// ==========================================
-// 8. 세부사항 및 삭제 기능
-// ==========================================
 function openDetailModal(ev) {
   activeDetailEventId = ev.id;
   const cat = categories.find(c => c.id === ev.catId) || categories[0];
@@ -422,7 +450,6 @@ function openDetailModal(ev) {
   document.getElementById('detailModalOverlay').classList.add('active');
   document.getElementById('detailBottomSheet').style.transform = 'translateY(0)';
 }
-
 window.closeDetailModal = function() {
   document.getElementById('detailBottomSheet').style.transform = 'translateY(100%)';
   setTimeout(() => document.getElementById('detailModalOverlay').classList.remove('active'), 400);
@@ -431,9 +458,7 @@ window.closeDetailModal = function() {
 window.deleteCurrentEventFromDetail = function() {
   openDeleteModal("일정을 삭제하시겠습니까?", () => {
     events = events.filter(e => e.id !== activeDetailEventId);
-    closeDetailModal();
-    renderCalendar();
-    saveDataToCloud();
+    closeDetailModal(); renderCalendar(); saveDataToCloud();
   });
 };
 
@@ -452,7 +477,6 @@ document.getElementById('confirmDeleteBtn').onclick = function() {
   closeDeleteModal();
 };
 
-// 카테고리 관리 생략 (기존 로직 사용)
 window.openCatManageModal = function() {
   const list = document.getElementById('catManageList');
   list.innerHTML = categories.map(cat => `<div class="cat-manage-chip ${cat.isDefault?'is-default':''}"><div class="cat-dot" style="background:${cat.color}"></div><span>${cat.name}</span></div>`).join('');
@@ -477,5 +501,6 @@ window.saveCategory = function() {
 document.addEventListener('DOMContentLoaded', () => {
   updateClock();
   setInterval(updateClock, 30000);
+  initSwipeGestures();
   renderCalendar();
 });
