@@ -27,8 +27,8 @@
           <button class="nav-arrow" onclick="changeMonth(1)">›</button>
         </div>
         <div class="header-actions">
-          <!-- 톱니바퀴 대신 ☰ 메뉴 버튼을 상단에 배치 -->
-          <button class="icon-btn" onclick="openUiDrawer()">☰</button>
+          <!-- 기존 톱니바퀴 위치에 통합 설정 및 메뉴 ☰ 버튼 배치 -->
+          <button class="icon-btn" onclick="openSettingsDrawer()">☰</button>
         </div>
       </div>
       <div class="segmented-control">
@@ -160,41 +160,44 @@
   </div>
 
   <!-- 4. 통합된 설정 및 메뉴 서랍 (Drawer) -->
-  <div id="ui-drawer-overlay" class="ui-overlay" onclick="closeUiDrawer()"></div>
-  <aside id="ui-drawer" class="ui-drawer">
-    <div class="ui-drawer-header">
-      <h2>설정 및 메뉴</h2>
-      <button id="ui-btn-close-drawer" class="ui-close-btn" onclick="closeUiDrawer()">✕</button>
-    </div>
-    
-    <div class="settings-list" style="padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; flex: 1;">
-      <!-- 화면 모드 설정 -->
-      <div class="toggle-item" style="padding-bottom: 14px; border-bottom: 1px solid var(--border-color);">
-        <span>화면 모드</span>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span id="themeModeLabel" style="font-size: 14px; font-weight: 600; color: var(--text-muted);">Dark</span>
-          <label class="switch">
-            <input type="checkbox" id="themeToggleSwitch" onchange="toggleThemeFromSettings()">
-            <span class="slider"></span>
-          </label>
+  <div id="settingsModalOverlay" class="modal-overlay" onclick="closeSettingsDrawer()">
+    <div id="settingsSideDrawer" class="side-drawer-left" onclick="event.stopPropagation()">
+      <div class="sheet-header" style="margin-bottom: 20px;">
+        <span class="sheet-title" style="font-size: 20px;">설정 및 메뉴</span>
+        <button class="ui-close-btn" onclick="closeSettingsDrawer()" style="background:transparent; border:none; font-size:18px; color:var(--text-muted); cursor:pointer;">✕</button>
+      </div>
+
+      <div class="settings-list" style="display: flex; flex-direction: column; width: 100%; gap: 16px; overflow-y: auto; flex: 1;">
+        
+        <!-- 화면 모드 설정 -->
+        <div class="toggle-item" style="padding-bottom: 14px; border-bottom: 1px solid var(--border-color);">
+          <span>화면 모드</span>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span id="themeModeLabel" style="font-size: 14px; font-weight: 600; color: var(--text-muted);">Dark</span>
+            <label class="switch">
+              <input type="checkbox" id="themeToggleSwitch" onchange="toggleThemeFromSettings()">
+              <span class="slider"></span>
+            </label>
+          </div>
         </div>
-      </div>
 
-      <!-- 구글 계정 연동 설정 -->
-      <div class="toggle-item" style="padding-bottom: 14px; border-bottom: 1px solid var(--border-color); flex-direction: column; align-items: flex-start; gap: 8px;">
-        <span style="font-size:14px; font-weight:600;">구글 계정 연동</span>
-        <div id="googleUserStatus" style="font-size: 12px; color: var(--text-muted);">로그인이 필요합니다.</div>
-        <button id="btnLoginGoogle" class="save-btn" style="margin-top: 4px; padding: 10px;" onclick="loginWithGoogle()">Google 로그인</button>
-        <button id="btnLogoutGoogle" class="delete-btn" style="margin-top: 4px; padding: 10px; display: none;" onclick="logoutGoogle()">로그아웃</button>
-      </div>
+        <!-- 구글 계정 연동 설정 -->
+        <div class="toggle-item" style="padding-bottom: 14px; border-bottom: 1px solid var(--border-color); flex-direction: column; align-items: flex-start; gap: 8px;">
+          <span style="font-size:14px; font-weight:600;">구글 계정 연동</span>
+          <div id="googleUserStatus" style="font-size: 12px; color: var(--text-muted);">로그인이 필요합니다.</div>
+          <button id="btnLoginGoogle" class="save-btn" style="margin-top: 4px; padding: 10px;" onclick="loginWithGoogle()">Google 로그인</button>
+          <button id="btnLogoutGoogle" class="delete-btn" style="margin-top: 4px; padding: 10px; display: none;" onclick="logoutGoogle()">로그아웃</button>
+        </div>
 
-      <!-- 기존 메뉴 리스트 연동 -->
-      <ul class="ui-drawer-menu" style="margin-top: 10px;">
-        <li onclick="closeUiDrawer(); openCatModal();">📁 카테고리 관리</li>
-        <li onclick="closeUiDrawer(); alert('준비 중인 기능입니다.');">🎉 D-Day / 기념일</li>
-      </ul>
+        <!-- 메뉴 리스트 -->
+        <ul style="list-style: none; padding: 0; margin: 0;">
+          <li onclick="closeSettingsDrawer(); openCatModal();" style="padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 15px;">📁 카테고리 관리</li>
+          <li onclick="closeSettingsDrawer(); alert('준비 중인 기능입니다.');" style="padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 15px;">🎉 D-Day / 기념일</li>
+        </ul>
+
+      </div>
     </div>
-  </aside>
+  </div>
 
   <!-- 5. 삭제 확인 모달 -->
   <div id="deleteModalOverlay" class="modal-overlay" onclick="closeDeleteModal()">
@@ -206,12 +209,12 @@
     </div>
   </div>
 
-  <!-- 하단 툴바 (검색 및 추가 버튼) -->
+  <!-- 하단 툴바 -->
   <nav class="ui-bottom-toolbar">
     <div class="ui-toolbar-left">
       <button id="ui-btn-search" class="ui-btn-search" onclick="openSearchSheet()"></button>
     </div>
-    <button id="ui-btn-add" class="ui-fab-btn" onclick="openModal()">＋</button>
+    <button id="ui-btn-add" class="ui-fab-btn" onclick="openAddModal()">＋</button>
   </nav>
 
   <!-- 하단 검색 바텀 시트 (Search) -->
@@ -222,12 +225,11 @@
       <input type="text" id="ui-search-input" placeholder="일정, 메모 검색..." autocomplete="off">
       <div class="ui-search-results">
         <p class="ui-empty-state">검색어를 입력하세요.</p>
-        <ul id="ui-search-list"></ul>
+        <ul id="ui-search-list" style="list-style: none; padding: 0; margin: 0;"></ul>
       </div>
     </div>
   </div>
 
   <script src="script.js"></script>
-  <script src="ui-layout.js"></script>
 </body>
 </html>
