@@ -1,355 +1,242 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <!-- iPhone 15 Pro Dynamic Island 및 Safe Area 대응 -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-  <title>최적화된 모바일 달력</title>
-  <style>
-    :root {
-      --primary-blue: #007AFF; /* iOS 파란색 */
-      --bg-color: #F2F2F7;
-      --card-bg: #FFFFFF;
-      --text-color: #000000;
-      --border-color: #E5E5EA;
-      --bar-height: 22px;
-      --bar-gap: 4px;
-    }
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>iPhone UI Calendar</title>
+  <link rel="stylesheet" href="style.css">
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      /* Safe Area 여백 적용 */
-      padding-top: env(safe-area-inset-top);
-      height: 100dvh;
-      overflow: hidden;
-    }
-
-    /* 전체 애플리케이션 레이아웃 */
-    .app-container {
-      display: flex;
-      flex-direction: column;
-      height: 100dvh;
-    }
-
-    /* 1. 상단 헤더 및 메뉴 (X 버튼 완전 제거) */
-    .header {
-      background-color: var(--card-bg);
-      border-bottom: 1px solid var(--border-color);
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 10;
-    }
-
-    .view-toggle {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn-tab {
-      border: none;
-      background: none;
-      font-size: 16px;
-      font-weight: 600;
-      color: #8E8E93;
-      cursor: pointer;
-      padding: 4px 8px;
-    }
-
-    .btn-tab.active {
-      color: var(--primary-blue);
-      border-bottom: 2px solid var(--primary-blue);
-    }
-
-    /* 설정/메뉴 패널 (X 버튼을 제거하고 깔끔한 백드롭 및 뒤로가기/바깥 클릭 제어) */
-    .menu-panel {
-      background-color: var(--card-bg);
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .menu-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #666;
-    }
-
-    /* 2. 월간/주간 하단 카테고리 추가 라인 제거 처리 */
-    .category-add-bar,
-    .category-line {
-      display: none !important;
-    }
-
-    /* 3. 메인 스크롤 영역 (iPhone 15 Pro 세로 스크롤 및 밑 일정 확인) */
-    .calendar-scroll-area {
-      flex: 1;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch; /* iOS 터치 스크롤 최적화 */
-      touch-action: pan-y;
-      padding-bottom: calc(60px + env(safe-area-inset-bottom)); /* 하단 홈 바 가림 방지 */
-    }
-
-    /* 달력 그리드 */
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      background-color: var(--card-bg);
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .day-header {
-      text-align: center;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 8px 0;
-      color: #8E8E93;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .day-cell {
-      min-height: 110px;
-      border-right: 1px solid var(--border-color);
-      border-bottom: 1px solid var(--border-color);
-      padding: 4px 2px;
-      position: relative;
-    }
-
-    .day-number {
-      font-size: 12px;
-      font-weight: 500;
-      margin-left: 4px;
-      margin-bottom: 4px;
-    }
-
-    /* 4. 긴 일정 막대 연결 최적화 (끊김 현상 방지) */
-    .events-container {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: var(--bar-gap);
-    }
-
-    .schedule-bar {
-      height: var(--bar-height);
-      background-color: var(--primary-blue);
-      color: #FFFFFF;
-      font-size: 11px;
-      line-height: var(--bar-height);
-      padding: 0 6px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      -webkit-font-smoothing: antialiased;
-      
-      /* 이음새 매끄럽게 처리 */
-      border-radius: 0;
-      margin-left: 0;
-      margin-right: 0;
-    }
-
-    /* 긴 일정의 시작점과 끝점에만 라운딩 처리 */
-    .schedule-bar.is-start {
-      border-top-left-radius: 6px;
-      border-bottom-left-radius: 6px;
-      margin-left: 2px;
-    }
-
-    .schedule-bar.is-end {
-      border-top-right-radius: 6px;
-      border-bottom-right-radius: 6px;
-      margin-right: 2px;
-    }
-
-    /* 5. 파란색 삭제 버튼 (images/trash.png 마스킹) */
-    .btn-delete {
-      width: 16px;
-      height: 16px;
-      min-width: 16px;
-      background-color: #FFFFFF; /* 이미지 마스크 내부는 흰색 아이콘 연출 */
-      border: none;
-      cursor: pointer;
-      
-      -webkit-mask-image: url('images/trash.png');
-      mask-image: url('images/trash.png');
-      -webkit-mask-size: contain;
-      mask-size: contain;
-      -webkit-mask-repeat: no-repeat;
-      mask-repeat: no-repeat;
-      -webkit-mask-position: center;
-      mask-position: center;
-    }
-
-    /* 6. 메인 UI 좌측 하단 + 버튼 완전 제거 */
-    .bottom-left-plus,
-    .fab-add-button {
-      display: none !important;
-    }
-  </style>
+  <!-- Firebase SDK (v9 compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
   <div class="app-container">
-    <!-- 헤더 -->
-    <header class="header">
-      <div class="view-toggle">
-        <button class="btn-tab active">월간</button>
-        <button class="btn-tab">주간</button>
-      </div>
-      <div style="font-weight: 700;">2026. 08</div>
-    </header>
-
-    <!-- 설정 및 메뉴 (X 버튼 없음) -->
-    <div class="menu-panel">
-      <span class="menu-title">⚙️ 일정 관리 설정</span>
-      <!-- X 버튼이 제거된 상태입니다 -->
+    <div class="status-bar">
+      <span id="clockTime">--:--</span>
     </div>
 
-    <!-- 스크롤 가능한 메인 달력 영역 -->
-    <main class="calendar-scroll-area">
-      <div class="calendar-grid" id="calendarGrid">
-        <!-- 요일 헤더 -->
-        <div class="day-header">일</div>
-        <div class="day-header">월</div>
-        <div class="day-header">화</div>
-        <div class="day-header">수</div>
-        <div class="day-header">목</div>
-        <div class="day-header">금</div>
-        <div class="day-header">토</div>
-
-        <!-- 일자 셀들이 JS에 의해 동적으로 생성됩니다 -->
+    <div class="app-header">
+      <div class="top-bar">
+        <div class="month-nav">
+          <button class="nav-arrow" onclick="changeMonth(-1)">‹</button>
+          <div id="monthDisplay" class="month-title">--년 --월</div>
+          <button class="nav-arrow" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn" onclick="openSettingsDrawer()">☰</button>
+        </div>
       </div>
-    </main>
+      <div class="segmented-control">
+        <button id="btnMonth" class="segment-btn active" onclick="switchView('month')">월간</button>
+        <button id="btnWeek" class="segment-btn" onclick="switchView('week')">주간</button>
+      </div>
+    </div>
+
+    <div class="category-section">
+      <button class="add-cat-btn" onclick="openCatManageModal()">＋ 추가</button>
+      <div class="cat-scroll-area" id="categoryContainer"></div>
+    </div>
+
+    <div class="calendar-body" id="calendarBody">
+      <div class="weekdays-header">
+        <span style="color:var(--accent-red);">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span style="color:var(--accent-blue);">토</span>
+      </div>
+      <div class="calendar-viewport">
+        <div class="calendar-track" id="calendarTrack">
+          <div id="gridPrev" class="calendar-grid"></div>
+          <div id="gridCurrent" class="calendar-grid"></div>
+          <div id="gridNext" class="calendar-grid"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <script>
-    // 1. 샘플 일정 데이터 (기간이 긴 일정 포함)
-    const mockEvents = [
-      { id: 1, title: "여름 휴가 여행", startDate: "2026-08-03", endDate: "2026-08-07" },
-      { id: 2, title: "팀 프로젝트 스프린트", startDate: "2026-08-04", endDate: "2026-08-06" },
-      { id: 3, title: "치과 예약", startDate: "2026-08-04", endDate: "2026-08-04" },
-      { id: 4, title: "하반기 워크샵", startDate: "2026-08-10", endDate: "2026-08-14" },
-      { id: 5, title: "코드 리뷰 및 최적화", startDate: "2026-08-12", endDate: "2026-08-18" }
-    ];
+  <!-- 일정 추가 모달 -->
+  <div id="modalOverlay" class="modal-overlay" onclick="closeModal()">
+    <div id="bottomSheet" class="bottom-sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
+      <div class="sheet-header"><span class="sheet-title">새로운 일정</span></div>
 
-    // 2. 탐욕적 레인 할당 알고리즘 (Greedy Lane Packing)
-    // 아래로 불필요하게 밀리는 현상을 방지하고, 빈 레인을 재활용하여 촘촘하게 배치합니다.
-    function optimizeScheduleLanes(events) {
-      // 시작일 오름차순 -> 기간 내림차순 정렬
-      const sorted = [...events].sort((a, b) => {
-        const startDiff = new Date(a.startDate) - new Date(b.startDate);
-        if (startDiff !== 0) return startDiff;
-        return (new Date(b.endDate) - new Date(b.startDate)) - (new Date(a.endDate) - new Date(a.startDate));
-      });
+      <div class="form-group">
+        <input type="text" id="eventTitle" class="form-input" placeholder="일정 제목">
+      </div>
 
-      const lanes = [];
+      <div class="toggles-container">
+        <div class="toggle-item">
+          <span>하루</span>
+          <label class="switch" id="singleSwitchLabel">
+            <input type="checkbox" id="singleDayToggle" checked onchange="handleToggleChange('single')">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="toggle-item">
+          <span>하루종일</span>
+          <label class="switch" id="allDaySwitchLabel">
+            <input type="checkbox" id="allDayToggle" checked onchange="handleToggleChange('allDay')">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
 
-      return sorted.map(event => {
-        const start = new Date(event.startDate).getTime();
-        const end = new Date(event.endDate).getTime();
-        let assignedLane = -1;
+      <div id="endDateGroup" class="form-group" style="display:none;">
+        <label style="font-size:11px; color:var(--text-muted); margin-bottom:4px; display:block;">종료 날짜</label>
+        <input type="date" id="endDateInput" class="form-input">
+      </div>
 
-        for (let i = 0; i < lanes.length; i++) {
-          if (lanes[i] < start) {
-            assignedLane = i;
-            break;
-          }
-        }
+      <div id="timeGroup" class="form-group" style="display:none;">
+        <label style="font-size:11px; color:var(--text-muted); margin-bottom:4px; display:block;">시작 시간</label>
+        <input type="time" id="eventTime" class="form-input" value="12:00">
+      </div>
 
-        if (assignedLane === -1) {
-          lanes.push(end);
-          assignedLane = lanes.length - 1;
-        } else {
-          lanes[assignedLane] = end;
-        }
+      <div class="form-group" style="margin-top:8px;">
+        <label style="font-size:11px; color:var(--text-muted); margin-bottom:4px; display:block;">카테고리</label>
+        <div id="modalCategoryList" class="category-picker"></div>
+      </div>
 
-        return { ...event, laneIndex: assignedLane };
-      });
-    }
+      <div class="toggle-item left-aligned" style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+        <label class="switch">
+          <input type="checkbox" id="detailsToggle" onchange="toggleDetailsVisibility()">
+          <span class="slider"></span>
+        </label>
+        <span>세부내역 작성</span>
+      </div>
 
-    // 3. 달력 그리드 생성 및 이벤트 렌더링
-    function renderCalendar() {
-      const grid = document.getElementById('calendarGrid');
-      const optimizedEvents = optimizeScheduleLanes(mockEvents);
+      <div id="detailsGroup" class="form-group" style="display:none; margin-top: 10px;">
+        <textarea id="eventDetails" class="form-input" placeholder="세부내역을 입력하세요" rows="3" style="resize:none; font-family:inherit;"></textarea>
+      </div>
 
-      // 2026년 8월 기준 (31일)
-      for (let day = 1; day <= 31; day++) {
-        const dateStr = `2026-08-${String(day).padStart(2, '0')}`;
-        const dayCell = document.createElement('div');
-        dayCell.className = 'day-cell';
-        
-        const dayNumber = document.createElement('div');
-        dayNumber.className = 'day-number';
-        dayNumber.textContent = day;
-        dayCell.appendChild(dayNumber);
+      <button class="save-btn" onclick="saveEvent()">일정 저장</button>
+    </div>
+  </div>
 
-        const eventsContainer = document.createElement('div');
-        eventsContainer.className = 'events-container';
+  <!-- 카테고리 관리 바텀 시트 -->
+  <div id="catModalOverlay" class="modal-overlay" onclick="closeCatModal()">
+    <div id="catBottomSheet" class="bottom-sheet cat-manage-sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
+      <div class="sheet-header"><span class="sheet-title">카테고리 관리</span></div>
 
-        // 해당 날짜에 걸쳐 있는 이벤트 찾기
-        const dayEvents = optimizedEvents.filter(e => dateStr >= e.startDate && dateStr <= e.endDate);
-        
-        // 레인 순서에 맞춰 정렬
-        dayEvents.sort((a, b) => a.laneIndex - b.laneIndex);
+      <div class="cat-manage-section">
+        <label class="cat-manage-label">저장된 카테고리</label>
+        <div id="catManageList" class="cat-manage-grid"></div>
+        <p id="catManageEmpty" class="cat-manage-empty" style="display:none;">등록된 카테고리가 없습니다.</p>
+        <p class="cat-manage-hint">사용자 추가 카테고리는 길게 눌러 삭제할 수 있습니다.</p>
+      </div>
 
-        dayEvents.forEach(e => {
-          const isStart = dateStr === e.startDate;
-          const isEnd = dateStr === e.endDate;
+      <div class="cat-manage-divider"></div>
 
-          const bar = document.createElement('div');
-          bar.className = `schedule-bar ${isStart ? 'is-start' : ''} ${isEnd ? 'is-end' : ''}`;
-          
-          // 시작일인 경우에만 타이틀 표기
-          const titleSpan = document.createElement('span');
-          titleSpan.textContent = isStart ? e.title : '';
-          bar.appendChild(titleSpan);
+      <div class="cat-manage-section">
+        <label class="cat-manage-label">새 카테고리 추가</label>
+        <div class="form-group">
+          <input type="text" id="newCatName" class="form-input" placeholder="카테고리 이름 (예: 운동, 공부)">
+        </div>
 
-          // 삭제 버튼 추가 (파란색 배경에 trash.png 마스킹 처리됨)
-          if (isEnd) {
-            const delBtn = document.createElement('button');
-            delBtn.className = 'btn-delete';
-            delBtn.onclick = (ev) => {
-              ev.stopPropagation();
-              deleteEvent(e.id);
-            };
-            bar.appendChild(delBtn);
-          }
+        <div class="form-group">
+          <label class="cat-manage-sublabel">색상 선택</label>
+          <div class="color-picker-group" id="colorPickerGroup"></div>
+        </div>
 
-          eventsContainer.appendChild(bar);
-        });
+        <button class="save-btn cat-manage-save-btn" onclick="saveCategory()">카테고리 저장</button>
+      </div>
+    </div>
+  </div>
 
-        dayCell.appendChild(eventsContainer);
-        grid.appendChild(dayCell);
-      }
-    }
+  <!-- 일정 상세 내용 모달 -->
+  <div id="detailModalOverlay" class="modal-overlay" onclick="closeDetailModal()">
+    <div id="detailBottomSheet" class="bottom-sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
+      
+      <div class="detail-header-group">
+        <span id="detailTitle" class="detail-title-text">지정목록</span>
+        <div id="detailCatChip" class="cat-chip" style="pointer-events: none; padding: 4px 10px; font-size: 12px;">
+          <div id="detailCatDot" class="cat-dot"></div>
+          <span id="detailCatName">카테고리</span>
+        </div>
+      </div>
 
-    function deleteEvent(id) {
-      const index = mockEvents.findIndex(e => e.id === id);
-      if (index !== -1) {
-        mockEvents.splice(index, 1);
-        // 달력 재생성
-        document.querySelectorAll('.day-cell').forEach(el => el.remove());
-        renderCalendar();
-      }
-    }
+      <div id="detailTimeArea" class="detail-time-text"></div>
 
-    // 초기 실행
-    document.addEventListener('DOMContentLoaded', renderCalendar);
-  </script>
+      <div id="detailNotesContainer" style="margin-bottom: 16px; background: var(--bg-input); padding: 12px; border-radius: 10px; display: none;">
+        <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px; font-weight:600;">세부사항</div>
+        <div id="detailNotesText" style="font-size: 14px; white-space: pre-wrap; word-break: break-all; color: var(--text-main);"></div>
+      </div>
+
+      <div class="detail-footer-area">
+        <button class="detail-trash-square-btn" onclick="deleteCurrentEventFromDetail()">🗑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 설정 및 메뉴 서랍 -->
+  <div id="settingsModalOverlay" class="modal-overlay" onclick="closeSettingsDrawer()">
+    <div id="settingsSideDrawer" class="side-drawer-left" onclick="event.stopPropagation()">
+      <div class="sheet-header settings-drawer-header">
+        <span class="sheet-title">설정 및 메뉴</span>
+        <button class="ui-close-btn" onclick="closeSettingsDrawer()">✕</button>
+      </div>
+
+      <div class="settings-list">
+        <div class="settings-row">
+          <span class="settings-label">화면 모드</span>
+          <div class="settings-row-action">
+            <span id="themeModeLabel" class="settings-value">Dark</span>
+            <label class="switch">
+              <input type="checkbox" id="themeToggleSwitch" onchange="toggleThemeFromSettings()">
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <span class="settings-label">구글 계정 연동</span>
+            <span id="googleUserStatus" class="settings-status">로그인이 필요합니다.</span>
+          </div>
+          <button id="btnLoginGoogle" class="settings-compact-btn settings-btn-primary" onclick="loginWithGoogle()">로그인</button>
+          <button id="btnLogoutGoogle" class="settings-compact-btn settings-btn-danger" style="display: none;" onclick="logoutGoogle()">로그아웃</button>
+        </div>
+
+        <ul class="settings-menu">
+          <li onclick="closeSettingsDrawer(); openCatManageModal();">📁 카테고리 관리</li>
+          <li onclick="closeSettingsDrawer(); alert('준비 중인 기능입니다.');">🎉 D-Day / 기념일</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 삭제 확인 모달 -->
+  <div id="deleteModalOverlay" class="modal-overlay" onclick="closeDeleteModal()">
+    <div id="deleteBottomSheet" class="bottom-sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
+      <div class="sheet-header"><span class="sheet-title">삭제 확인</span></div>
+      <p style="font-size:14px; color:var(--text-muted); margin-bottom:12px;" id="deleteModalDesc">항목을 삭제하시겠습니까?</p>
+      <button class="delete-btn" id="confirmDeleteBtn">삭제하기</button>
+    </div>
+  </div>
+
+  <!-- 하단 툴바 -->
+  <nav class="ui-bottom-toolbar">
+    <div class="ui-toolbar-left">
+      <button id="ui-btn-search" class="ui-btn-search" onclick="openSearchSheet()"></button>
+    </div>
+    <button id="ui-btn-add" class="ui-fab-btn" onclick="openAddModal()">＋</button>
+  </nav>
+
+  <!-- 하단 검색 바텀 시트 -->
+  <div id="ui-search-overlay" class="ui-overlay" onclick="closeSearchSheet()"></div>
+  <div id="ui-search-sheet" class="ui-bottom-sheet">
+    <div class="ui-sheet-handle"></div>
+    <div class="ui-sheet-content">
+      <input type="text" id="ui-search-input" placeholder="일정, 메모 검색..." autocomplete="off">
+      <div class="ui-search-results">
+        <p class="ui-empty-state">검색어를 입력하세요.</p>
+        <ul id="ui-search-list" style="list-style: none; padding: 0; margin: 0;"></ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
