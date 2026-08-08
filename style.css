@@ -84,6 +84,77 @@ html, body {
   display: none !important;
 }
 
+.btn-delete {
+  width: 22px;
+  height: 22px;
+  background-color: #007AFF; /* 파란색 설정 */
+  border: none;
+  cursor: pointer;
+  
+  /* images/trash.png 마스킹 처리 */
+  -webkit-mask-image: url('images/trash.png');
+  mask-image: url('images/trash.png');
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+/* 일정 막대 공통 */
+.schedule-bar {
+  height: 20px;
+  margin: 1px 0;
+  border-radius: 0; /* 기본적으로 직각으로 붙임 */
+  box-shadow: none;
+  font-size: 11px;
+  line-height: 20px;
+  transition: all 0.15s ease-out;
+  -webkit-font-smoothing: antialiased; /* iOS 글자 선명도 개선 */
+}
+
+/* 시작일 셀에 위치한 막대 부분만 좌측 라운딩 */
+.schedule-bar.is-start {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  margin-left: 3px;
+}
+
+/* 종료일 셀에 위치한 막대 부분만 우측 라운딩 */
+.schedule-bar.is-end {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  margin-right: 3px;
+}
+
+/* 중간 날짜 막대 이음새 여백 제거 */
+.schedule-bar.is-middle {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* 달력 메인 컨테이너 영역 */
+.calendar-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 일정이 나열되는 스크롤 영역 */
+.calendar-body {
+  flex: 1;
+  overflow-y: auto;
+  
+  /* iOS 부드러운 스크롤 & 터치 바운스 적용 */
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  
+  /* iPhone 15 Pro 하단 Home Indicator 대응 하단 여백 */
+  padding-bottom: calc(40px + env(safe-area-inset-bottom));
+}
+
 /* ========================================================
    4. 레이아웃 및 캘린더 컴포넌트
 ======================================================== */
