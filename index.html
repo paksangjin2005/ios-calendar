@@ -38,7 +38,7 @@
     </div>
 
     <div class="category-section">
-      <button class="add-cat-btn" onclick="openCatModal()">＋ 추가</button>
+      <button class="add-cat-btn" onclick="openCatManageModal()">＋ 추가</button>
       <div class="cat-scroll-area" id="categoryContainer"></div>
     </div>
 
@@ -114,22 +114,34 @@
     </div>
   </div>
 
-  <!-- 2. 카테고리 추가 모달 -->
+  <!-- 2. 카테고리 관리 바텀 시트 -->
   <div id="catModalOverlay" class="modal-overlay" onclick="closeCatModal()">
-    <div id="catBottomSheet" class="bottom-sheet" onclick="event.stopPropagation()">
+    <div id="catBottomSheet" class="bottom-sheet cat-manage-sheet" onclick="event.stopPropagation()">
       <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
-      <div class="sheet-header"><span class="sheet-title">새 카테고리 추가</span></div>
-      
-      <div class="form-group">
-        <input type="text" id="newCatName" class="form-input" placeholder="카테고리 이름 (예: 운동, 공부)">
+      <div class="sheet-header"><span class="sheet-title">카테고리 관리</span></div>
+
+      <div class="cat-manage-section">
+        <label class="cat-manage-label">저장된 카테고리</label>
+        <div id="catManageList" class="cat-manage-grid"></div>
+        <p id="catManageEmpty" class="cat-manage-empty" style="display:none;">등록된 카테고리가 없습니다.</p>
+        <p class="cat-manage-hint">사용자 추가 카테고리는 길게 눌러 삭제할 수 있습니다.</p>
       </div>
 
-      <div class="form-group">
-        <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:6px;">색상 선택</label>
-        <div class="color-picker-group" id="colorPickerGroup"></div>
-      </div>
+      <div class="cat-manage-divider"></div>
 
-      <button class="save-btn" onclick="saveCategory()">카테고리 저장</button>
+      <div class="cat-manage-section">
+        <label class="cat-manage-label">새 카테고리 추가</label>
+        <div class="form-group">
+          <input type="text" id="newCatName" class="form-input" placeholder="카테고리 이름 (예: 운동, 공부)">
+        </div>
+
+        <div class="form-group">
+          <label class="cat-manage-sublabel">색상 선택</label>
+          <div class="color-picker-group" id="colorPickerGroup"></div>
+        </div>
+
+        <button class="save-btn cat-manage-save-btn" onclick="saveCategory()">카테고리 저장</button>
+      </div>
     </div>
   </div>
 
@@ -162,18 +174,18 @@
   <!-- 4. 통합된 설정 및 메뉴 서랍 (Drawer) -->
   <div id="settingsModalOverlay" class="modal-overlay" onclick="closeSettingsDrawer()">
     <div id="settingsSideDrawer" class="side-drawer-left" onclick="event.stopPropagation()">
-      <div class="sheet-header" style="margin-bottom: 20px;">
-        <span class="sheet-title" style="font-size: 20px;">설정 및 메뉴</span>
-        <button class="ui-close-btn" onclick="closeSettingsDrawer()" style="background:transparent; border:none; font-size:18px; color:var(--text-muted); cursor:pointer;">✕</button>
+      <div class="sheet-header settings-drawer-header">
+        <span class="sheet-title">설정 및 메뉴</span>
+        <button class="ui-close-btn" onclick="closeSettingsDrawer()">✕</button>
       </div>
 
-      <div class="settings-list" style="display: flex; flex-direction: column; width: 100%; gap: 16px; overflow-y: auto; flex: 1;">
+      <div class="settings-list">
         
         <!-- 화면 모드 설정 -->
-        <div class="toggle-item" style="padding-bottom: 14px; border-bottom: 1px solid var(--border-color);">
-          <span>화면 모드</span>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <span id="themeModeLabel" style="font-size: 14px; font-weight: 600; color: var(--text-muted);">Dark</span>
+        <div class="settings-row">
+          <span class="settings-label">화면 모드</span>
+          <div class="settings-row-action">
+            <span id="themeModeLabel" class="settings-value">Dark</span>
             <label class="switch">
               <input type="checkbox" id="themeToggleSwitch" onchange="toggleThemeFromSettings()">
               <span class="slider"></span>
@@ -182,17 +194,19 @@
         </div>
 
         <!-- 구글 계정 연동 설정 -->
-        <div class="toggle-item" style="padding-bottom: 14px; border-bottom: 1px solid var(--border-color); flex-direction: column; align-items: flex-start; gap: 8px;">
-          <span style="font-size:14px; font-weight:600;">구글 계정 연동</span>
-          <div id="googleUserStatus" style="font-size: 12px; color: var(--text-muted);">로그인이 필요합니다.</div>
-          <button id="btnLoginGoogle" class="save-btn" style="margin-top: 4px; padding: 10px;" onclick="loginWithGoogle()">Google 로그인</button>
-          <button id="btnLogoutGoogle" class="delete-btn" style="margin-top: 4px; padding: 10px; display: none;" onclick="logoutGoogle()">로그아웃</button>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <span class="settings-label">구글 계정 연동</span>
+            <span id="googleUserStatus" class="settings-status">로그인이 필요합니다.</span>
+          </div>
+          <button id="btnLoginGoogle" class="settings-compact-btn settings-btn-primary" onclick="loginWithGoogle()">로그인</button>
+          <button id="btnLogoutGoogle" class="settings-compact-btn settings-btn-danger" style="display: none;" onclick="logoutGoogle()">로그아웃</button>
         </div>
 
         <!-- 메뉴 리스트 -->
-        <ul style="list-style: none; padding: 0; margin: 0;">
-          <li onclick="closeSettingsDrawer(); openCatModal();" style="padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 15px;">📁 카테고리 관리</li>
-          <li onclick="closeSettingsDrawer(); alert('준비 중인 기능입니다.');" style="padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 15px;">🎉 D-Day / 기념일</li>
+        <ul class="settings-menu">
+          <li onclick="closeSettingsDrawer(); openCatManageModal();">📁 카테고리 관리</li>
+          <li onclick="closeSettingsDrawer(); alert('준비 중인 기능입니다.');">🎉 D-Day / 기념일</li>
         </ul>
 
       </div>
