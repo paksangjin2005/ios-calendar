@@ -72,6 +72,18 @@ html, body {
   opacity: 0.6;
 }
 
+/* 좌측 하단 + 버튼 숨김 */
+.fab-add-button,
+.bottom-left-plus {
+  display: none !important;
+}
+
+/* 월간 / 주간 하단 카테고리 추가 라인 숨김 */
+.category-add-bar,
+.category-line {
+  display: none !important;
+}
+
 /* ========================================================
    4. 레이아웃 및 캘린더 컴포넌트
 ======================================================== */
