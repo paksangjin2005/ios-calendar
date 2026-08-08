@@ -735,6 +735,47 @@ function createCell(container, dateObj, isOtherMonth) {
   container.appendChild(cell);
 }
 
+function optimizeScheduleLanes(events) {
+  // 1. 시작일 오름차순 -> 기간이 긴 순서(내림차순) 정렬
+  const sortedEvents = [...events].sort((a, b) => {
+    const startDiff = new Date(a.startDate) - new Date(b.startDate);
+    if (startDiff !== 0) return startDiff;
+    
+    const durationA = new Date(a.endDate) - new Date(a.startDate);
+    const durationB = new Date(b.endDate) - new Date(b.startDate);
+    return durationB - durationA;
+  });
+
+  // 2. 레인(트랙) 배열 초기화
+  const lanes = []; // 각 레인의 마지막 이벤트 종료일 저장
+
+  return sortedEvents.map(event => {
+    let assignedLane = -1;
+    const eventStart = new Date(event.startDate).getTime();
+
+    // 빈 레인 찾기 (기존 이벤트의 종료일보다 시작일이 뒤에 있는 경우)
+    for (let i = 0; i < lanes.length; i++) {
+      if (lanes[i] < eventStart) {
+        assignedLane = i;
+        break;
+      }
+    }
+
+    // 빈 레인이 없으면 새 레인 추가
+    if (assignedLane === -1) {
+      lanes.push(new Date(event.endDate).getTime());
+      assignedLane = lanes.length - 1;
+    } else {
+      lanes[assignedLane] = new Date(event.endDate).getTime();
+    }
+
+    return {
+      ...event,
+      laneIndex: assignedLane // 막대가 들어갈 vertical 위치 (top: laneIndex * height)
+    };
+  });
+}
+
 function attachLongPress(element, callback) {
   let timer = null;
   let isLongPress = false;
