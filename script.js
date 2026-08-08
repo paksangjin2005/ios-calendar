@@ -1,5 +1,5 @@
 // ==========================================
-// 1. Firebase 설정 및 초기화 (본인 값으로 변경!)
+// 1. Firebase 설정 및 초기화
 // ==========================================
 const firebaseConfig = {
   apiKey: "AIzaSyAy-056YIhiMKQDM8Mp-ZNvG3mNS2lcS8U",
@@ -115,8 +115,10 @@ function getLocalDateStr(d) {
 
 function updateClock() {
   const now = new Date();
-  document.getElementById('clockTime').innerText = 
-    `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const clockElem = document.getElementById('clockTime');
+  if (clockElem) {
+    clockElem.innerText = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  }
 }
 
 function getHolidayName(dateObj) {
@@ -150,32 +152,41 @@ function getHolidayName(dateObj) {
   return holidayMap[dateStr] || null;
 }
 
-window.openSettingsModal = function() {
+// ==========================================
+// 5. 통합 설정 및 메뉴 서랍 (Drawer) 제어
+// ==========================================
+window.openSettingsDrawer = function() {
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
   document.getElementById('themeToggleSwitch').checked = isLight;
   document.getElementById('themeModeLabel').innerText = isLight ? 'Light' : 'Dark';
 
   const drawer = document.getElementById('settingsSideDrawer');
-  drawer.style.transform = '';
-  document.getElementById('settingsModalOverlay').classList.add('active');
-  setTimeout(() => {
-    drawer.classList.add('active');
-  }, 10);
+  const overlay = document.getElementById('settingsModalOverlay');
+  if (drawer && overlay) {
+    drawer.style.transform = '';
+    overlay.classList.add('active');
+    setTimeout(() => {
+      drawer.classList.add('active');
+    }, 10);
+  }
 };
 
-window.closeSettingsModal = function() {
+window.closeSettingsDrawer = function() {
   const drawer = document.getElementById('settingsSideDrawer');
-  drawer.classList.remove('active');
-  drawer.style.transform = 'translateX(-100%)';
-  
-  setTimeout(() => {
-    document.getElementById('settingsModalOverlay').classList.remove('active');
-    drawer.style.transform = '';
-  }, 300);
+  const overlay = document.getElementById('settingsModalOverlay');
+  if (drawer && overlay) {
+    drawer.classList.remove('active');
+    drawer.style.transform = 'translateX(-100%)';
+    setTimeout(() => {
+      overlay.classList.remove('active');
+      drawer.style.transform = '';
+    }, 300);
+  }
 };
 
 function makeLeftDrawerDraggable(drawerId, closeFn) {
   const drawer = document.getElementById(drawerId);
+  if (!drawer) return;
   let startX = 0, currentX = 0, isDragging = false;
 
   drawer.addEventListener('touchstart', (e) => {
@@ -215,6 +226,86 @@ window.toggleThemeFromSettings = function() {
   document.getElementById('themeModeLabel').innerText = isLight ? 'Light' : 'Dark';
 };
 
+// ==========================================
+// 6. 검색 바텀 시트 및 검색 기능
+// ==========================================
+window.openSearchSheet = function() {
+  const sheet = document.getElementById('ui-search-sheet');
+  const overlay = document.getElementById('ui-search-overlay');
+  const input = document.getElementById('ui-search-input');
+  if (sheet && overlay) {
+    overlay.classList.add('active');
+    sheet.classList.add('active');
+    if (input) setTimeout(() => input.focus(), 300);
+  }
+};
+
+window.closeSearchSheet = function() {
+  const sheet = document.getElementById('ui-search-sheet');
+  const overlay = document.getElementById('ui-search-overlay');
+  const input = document.getElementById('ui-search-input');
+  const list = document.getElementById('ui-search-list');
+  const emptyState = document.querySelector('.ui-empty-state');
+  if (sheet && overlay) {
+    sheet.classList.remove('active');
+    overlay.classList.remove('active');
+    if (input) {
+      input.value = '';
+      input.blur();
+    }
+    if (list) list.innerHTML = '';
+    if (emptyState) emptyState.style.display = 'block';
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const searchInput = document.getElementById('ui-search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      const keyword = e.target.value.trim().toLowerCase();
+      const searchList = document.getElementById('ui-search-list');
+      const emptyState = document.querySelector('.ui-empty-state');
+
+      if (!searchList || !emptyState) return;
+
+      if (keyword.length > 0) {
+        const filtered = events.filter(ev => 
+          ev.title.toLowerCase().includes(keyword) || 
+          (ev.details && ev.details.toLowerCase().includes(keyword))
+        );
+
+        if (filtered.length > 0) {
+          emptyState.style.display = 'none';
+          searchList.innerHTML = filtered.map(ev => `
+            <li class="ui-search-item" style="padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer;" onclick="closeSearchSheet(); openDetailModalById(${ev.id});">
+              <div class="ui-search-date" style="font-size: 12px; color: var(--accent-red); margin-bottom: 4px;">${ev.startDate}</div>
+              <div class="ui-search-title" style="font-size: 16px; color: var(--text-main);">${ev.title}</div>
+            </li>
+          `).join('');
+        } else {
+          emptyState.style.display = 'none';
+          searchList.innerHTML = `
+            <li class="ui-search-item" style="padding: 12px 0;">
+              <div class="ui-search-title" style="font-size: 14px; color: var(--text-muted);">검색 결과가 없습니다.</div>
+            </li>
+          `;
+        }
+      } else {
+        searchList.innerHTML = '';
+        emptyState.style.display = 'block';
+      }
+    });
+  }
+});
+
+window.openDetailModalById = function(eventId) {
+  const ev = events.find(e => e.id === eventId);
+  if (ev) openDetailModal(ev);
+};
+
+// ==========================================
+// 7. 캘린더 보기 및 조작 로직
+// ==========================================
 window.switchView = function(view) {
   currentView = view;
   document.getElementById('btnMonth').classList.toggle('active', view === 'month');
@@ -258,6 +349,7 @@ window.toggleDetailsVisibility = function() {
 
 function makeSheetDraggable(sheetId, closeFn) {
   const sheet = document.getElementById(sheetId);
+  if (!sheet) return;
   let startY = 0, currentY = 0, isDragging = false;
 
   sheet.addEventListener('touchstart', (e) => {
@@ -288,6 +380,7 @@ function makeSheetDraggable(sheetId, closeFn) {
 function initCalendarSwipe() {
   const calBody = document.getElementById('calendarBody');
   const track = document.getElementById('calendarTrack');
+  if (!calBody || !track) return;
   let startX = 0, startY = 0, deltaX = 0, deltaY = 0;
   let isTouching = false;
   let isHorizontalSwipe = false;
@@ -361,6 +454,7 @@ function initCalendarSwipe() {
 
 function renderCategories() {
   const container = document.getElementById('categoryContainer');
+  if (!container) return;
   container.innerHTML = '';
 
   categories.forEach(cat => {
@@ -382,11 +476,16 @@ function renderCategories() {
   });
 }
 
-function openCatModal() {
-  document.getElementById('catModalOverlay').classList.add('active');
-  document.getElementById('catBottomSheet').style.transform = 'translateY(0)';
+window.openCatModal = function() {
+  const overlay = document.getElementById('catModalOverlay');
+  const sheet = document.getElementById('catBottomSheet');
+  if (overlay && sheet) {
+    overlay.classList.add('active');
+    sheet.style.transform = 'translateY(0)';
+  }
   const colors = ['#FF2D55', '#AF52DE', '#5856D6', '#FFCC00', '#00C7BE', '#FF9500'];
   const picker = document.getElementById('colorPickerGroup');
+  if (!picker) return;
   picker.innerHTML = '';
   selectedCatColor = colors[0];
 
@@ -401,18 +500,23 @@ function openCatModal() {
     };
     picker.appendChild(dot);
   });
-}
+};
 
 window.closeCatModal = function() {
   const sheet = document.getElementById('catBottomSheet');
-  sheet.style.transform = 'translateY(100%)';
-  setTimeout(() => {
-    document.getElementById('catModalOverlay').classList.remove('active');
-  }, 200);
+  const overlay = document.getElementById('catModalOverlay');
+  if (sheet && overlay) {
+    sheet.style.transform = 'translateY(100%)';
+    setTimeout(() => {
+      overlay.classList.remove('active');
+    }, 200);
+  }
 };
 
 window.saveCategory = function() {
-  const name = document.getElementById('newCatName').value.trim();
+  const nameInput = document.getElementById('newCatName');
+  if (!nameInput) return;
+  const name = nameInput.value.trim();
   if (!name) return alert('카테고리 이름을 입력해주세요.');
 
   categories.push({
@@ -422,7 +526,7 @@ window.saveCategory = function() {
     isDefault: false
   });
 
-  document.getElementById('newCatName').value = '';
+  nameInput.value = '';
   closeCatModal();
   renderCategories();
   renderModalCategories();
@@ -430,9 +534,12 @@ window.saveCategory = function() {
 };
 
 function renderCalendar() {
+  const monthDisplay = document.getElementById('monthDisplay');
+  if (!monthDisplay) return;
+
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  document.getElementById('monthDisplay').innerText = `${year}년 ${month + 1}월`;
+  monthDisplay.innerText = `${year}년 ${month + 1}월`;
 
   let prevDate = new Date(currentDate);
   let nextDate = new Date(currentDate);
@@ -451,6 +558,7 @@ function renderCalendar() {
 }
 
 function renderGridContent(gridElem, baseDate) {
+  if (!gridElem) return;
   gridElem.innerHTML = '';
   const year = baseDate.getFullYear();
   const month = baseDate.getMonth();
@@ -639,10 +747,13 @@ function openDetailModal(ev) {
 
 window.closeDetailModal = function() {
   const sheet = document.getElementById('detailBottomSheet');
-  sheet.style.transform = 'translateY(100%)';
-  setTimeout(() => {
-    document.getElementById('detailModalOverlay').classList.remove('active');
-  }, 200);
+  const overlay = document.getElementById('detailModalOverlay');
+  if (sheet && overlay) {
+    sheet.style.transform = 'translateY(100%)';
+    setTimeout(() => {
+      overlay.classList.remove('active');
+    }, 200);
+  }
 };
 
 window.deleteCurrentEventFromDetail = function() {
@@ -663,19 +774,25 @@ function openDeleteModal(message, deleteCallback) {
 
 window.closeDeleteModal = function() {
   const sheet = document.getElementById('deleteBottomSheet');
-  sheet.style.transform = 'translateY(100%)';
-  setTimeout(() => {
-    document.getElementById('deleteModalOverlay').classList.remove('active');
-    pendingDeleteAction = null;
-  }, 200);
+  const overlay = document.getElementById('deleteModalOverlay');
+  if (sheet && overlay) {
+    sheet.style.transform = 'translateY(100%)';
+    setTimeout(() => {
+      overlay.classList.remove('active');
+      pendingDeleteAction = null;
+    }, 200);
+  }
 };
 
-document.getElementById('confirmDeleteBtn').onclick = function() {
-  if (typeof pendingDeleteAction === 'function') {
-    pendingDeleteAction();
-  }
-  closeDeleteModal();
-};
+const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+if (confirmDeleteBtn) {
+  confirmDeleteBtn.onclick = function() {
+    if (typeof pendingDeleteAction === 'function') {
+      pendingDeleteAction();
+    }
+    closeDeleteModal();
+  };
+}
 
 window.openAddModal = function() {
   document.getElementById('singleDayToggle').checked = true;
@@ -695,14 +812,18 @@ window.openAddModal = function() {
 
 window.closeModal = function() {
   const sheet = document.getElementById('bottomSheet');
-  sheet.style.transform = 'translateY(100%)';
-  setTimeout(() => {
-    document.getElementById('modalOverlay').classList.remove('active');
-  }, 200);
+  const overlay = document.getElementById('modalOverlay');
+  if (sheet && overlay) {
+    sheet.style.transform = 'translateY(100%)';
+    setTimeout(() => {
+      overlay.classList.remove('active');
+    }, 200);
+  }
 };
 
 function renderModalCategories() {
   const list = document.getElementById('modalCategoryList');
+  if (!list) return;
   list.innerHTML = '';
   categories.forEach(cat => {
     const btn = document.createElement('div');
@@ -717,7 +838,9 @@ function renderModalCategories() {
 }
 
 window.saveEvent = function() {
-  const title = document.getElementById('eventTitle').value.trim();
+  const titleInput = document.getElementById('eventTitle');
+  if (!titleInput) return;
+  const title = titleInput.value.trim();
   if (!title) return alert('제목을 입력해주세요.');
 
   const isSingle = document.getElementById('singleDayToggle').checked;
@@ -745,21 +868,32 @@ window.saveEvent = function() {
     createdAtStr: `${createdDateStr} / ${createdTimeStr}`
   });
 
-  document.getElementById('eventTitle').value = '';
+  titleInput.value = '';
   closeModal();
   renderCalendar();
   saveDataToCloud();
 };
 
-// 모달 드래그 이벤트 등록
-makeSheetDraggable('bottomSheet', window.closeModal);
-makeSheetDraggable('catBottomSheet', window.closeCatModal);
-makeSheetDraggable('detailBottomSheet', window.closeDetailModal);
-makeSheetDraggable('deleteBottomSheet', window.closeDeleteModal);
-makeLeftDrawerDraggable('settingsSideDrawer', window.closeSettingsModal);
+document.addEventListener('DOMContentLoaded', () => {
+  makeSheetDraggable('bottomSheet', window.closeModal);
+  makeSheetDraggable('catBottomSheet', window.closeCatModal);
+  makeSheetDraggable('detailBottomSheet', window.closeDetailModal);
+  makeSheetDraggable('deleteBottomSheet', window.closeDeleteModal);
+  makeLeftDrawerDraggable('settingsSideDrawer', window.closeSettingsDrawer);
 
-initCalendarSwipe();
-updateClock();
-renderCategories();
-renderCalendar();
-setInterval(updateClock, 30000);
+  const sheetHandle = document.querySelector('.ui-sheet-handle');
+  if (sheetHandle) {
+    let startY = 0;
+    sheetHandle.addEventListener('touchstart', e => startY = e.touches[0].clientY);
+    sheetHandle.addEventListener('touchmove', e => {
+      const currentY = e.touches[0].clientY;
+      if (currentY > startY + 30) window.closeSearchSheet();
+    });
+  }
+
+  initCalendarSwipe();
+  updateClock();
+  renderCategories();
+  renderCalendar();
+  setInterval(updateClock, 30000);
+});
