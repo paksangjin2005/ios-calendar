@@ -25,19 +25,17 @@
           <div id="monthDisplay" class="month-title">--년 --월</div>
           <button class="nav-arrow" onclick="changeMonth(1)">›</button>
         </div>
+        <!-- 우측 상단으로 이동된 검색, 추가, 설정 버튼 -->
         <div class="header-actions">
-          <button class="icon-btn" onclick="openSettingsDrawer()">☰</button>
+          <button class="icon-btn search-icon-btn" onclick="openSearchSheet()"></button>
+          <button class="icon-btn text-icon-btn" onclick="openAddModal()">＋</button>
+          <button class="icon-btn text-icon-btn" onclick="openSettingsDrawer()">☰</button>
         </div>
       </div>
       <div class="segmented-control">
         <button id="btnMonth" class="segment-btn active" onclick="switchView('month')">월간</button>
         <button id="btnWeek" class="segment-btn" onclick="switchView('week')">주간</button>
       </div>
-    </div>
-
-    <div class="category-section">
-      <button class="add-cat-btn" onclick="openCatManageModal()">＋ 추가</button>
-      <div class="cat-scroll-area" id="categoryContainer"></div>
     </div>
 
     <div class="calendar-body" id="calendarBody">
@@ -112,7 +110,7 @@
     </div>
   </div>
 
-  <!-- 카테고리 관리 바텀 시트 -->
+  <!-- 카테고리 관리 모달 -->
   <div id="catModalOverlay" class="modal-overlay" onclick="closeCatModal()">
     <div id="catBottomSheet" class="bottom-sheet cat-manage-sheet" onclick="event.stopPropagation()">
       <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
@@ -124,21 +122,17 @@
         <p id="catManageEmpty" class="cat-manage-empty" style="display:none;">등록된 카테고리가 없습니다.</p>
         <p class="cat-manage-hint">사용자 추가 카테고리는 길게 눌러 삭제할 수 있습니다.</p>
       </div>
-
       <div class="cat-manage-divider"></div>
-
       <div class="cat-manage-section">
         <label class="cat-manage-label">새 카테고리 추가</label>
         <div class="form-group">
-          <input type="text" id="newCatName" class="form-input" placeholder="카테고리 이름 (예: 운동, 공부)">
+          <input type="text" id="newCatName" class="form-input" placeholder="카테고리 이름 (예: 업무, 개인)">
         </div>
-
         <div class="form-group">
           <label class="cat-manage-sublabel">색상 선택</label>
           <div class="color-picker-group" id="colorPickerGroup"></div>
         </div>
-
-        <button class="save-btn cat-manage-save-btn" onclick="saveCategory()">카테고리 저장</button>
+        <button class="save-btn" onclick="saveCategory()">카테고리 저장</button>
       </div>
     </div>
   </div>
@@ -149,7 +143,7 @@
       <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
       
       <div class="detail-header-group">
-        <span id="detailTitle" class="detail-title-text">지정목록</span>
+        <span id="detailTitle" class="detail-title-text">일정 제목</span>
         <div id="detailCatChip" class="cat-chip" style="pointer-events: none; padding: 4px 10px; font-size: 12px;">
           <div id="detailCatDot" class="cat-dot"></div>
           <span id="detailCatName">카테고리</span>
@@ -164,17 +158,17 @@
       </div>
 
       <div class="detail-footer-area">
-        <button class="detail-trash-square-btn" onclick="deleteCurrentEventFromDetail()">🗑</button>
+        <!-- 파란색 trash.png 적용된 삭제 버튼 -->
+        <button class="detail-trash-btn" onclick="deleteCurrentEventFromDetail()"></button>
       </div>
     </div>
   </div>
 
-  <!-- 설정 및 메뉴 서랍 -->
+  <!-- 설정 사이드 드로어 -->
   <div id="settingsModalOverlay" class="modal-overlay" onclick="closeSettingsDrawer()">
     <div id="settingsSideDrawer" class="side-drawer-left" onclick="event.stopPropagation()">
       <div class="sheet-header settings-drawer-header">
         <span class="sheet-title">설정 및 메뉴</span>
-        <button class="ui-close-btn" onclick="closeSettingsDrawer()">✕</button>
       </div>
 
       <div class="settings-list">
@@ -215,14 +209,6 @@
       <button class="delete-btn" id="confirmDeleteBtn">삭제하기</button>
     </div>
   </div>
-
-  <!-- 하단 툴바 -->
-  <nav class="ui-bottom-toolbar">
-    <div class="ui-toolbar-left">
-      <button id="ui-btn-search" class="ui-btn-search" onclick="openSearchSheet()"></button>
-    </div>
-    <button id="ui-btn-add" class="ui-fab-btn" onclick="openAddModal()">＋</button>
-  </nav>
 
   <!-- 하단 검색 바텀 시트 -->
   <div id="ui-search-overlay" class="ui-overlay" onclick="closeSearchSheet()"></div>
